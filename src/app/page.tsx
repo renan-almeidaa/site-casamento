@@ -23,8 +23,8 @@ export default function HomePage() {
       <NossaHistoria />
       <OGrandeDia />
       <Galeria />
-      <RsvpCta onOpenRsvp={() => setRsvpOpen(true)} />
       <PresentesCta />
+      <RsvpCta onOpenRsvp={() => setRsvpOpen(true)} />
       <Agradecimento />
       <Footer />
       <RsvpModal open={rsvpOpen} onClose={() => setRsvpOpen(false)} />
