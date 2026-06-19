@@ -15,7 +15,6 @@ type Props = {
   buyerWhatsapp: string;
   items: { nome: string; valor: number; qtd: number }[];
   total: number;
-  paymentMethod: string;
 };
 
 const fmt = (v: number) =>
@@ -29,7 +28,6 @@ export function GiftPurchaseEmail({
   buyerWhatsapp,
   items,
   total,
-  paymentMethod,
 }: Props) {
   return (
     <Html lang="pt-BR">
@@ -58,7 +56,6 @@ export function GiftPurchaseEmail({
           <Section>
             <Text style={label}>Total</Text>
             <Text style={total$}>{fmt(total)}</Text>
-            <Text style={small}>Forma de pagamento: {paymentMethod}</Text>
           </Section>
           <Hr style={hr} />
           <Text style={footerText}>
@@ -117,7 +114,6 @@ const total$ = {
   color: "#a07850",
   margin: "0 0 4px",
 };
-const small = { fontSize: "13px", color: "#6b5540", margin: "4px 0 0" };
 const footerText = {
   fontSize: "13px",
   color: "#6b5540",

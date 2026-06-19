@@ -35,7 +35,6 @@ async function notify(payload: {
   buyerWhatsapp: string;
   items: { nome: string; valor: number; qtd: number }[];
   total: number;
-  paymentMethod: string;
 }) {
   const result = await sendBrevoEmail({
     to: getNotificationEmails(),
@@ -115,7 +114,6 @@ export async function POST(request: Request) {
     buyerWhatsapp: data.buyerWhatsapp,
     items: data.items,
     total: data.total,
-    paymentMethod: data.paymentMethod === "pix" ? "PIX" : "Cartão",
   });
 
   return NextResponse.json({ ok: true, id: purchaseId });
