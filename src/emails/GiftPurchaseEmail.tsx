@@ -74,13 +74,19 @@ export function GiftPurchaseEmail({
   );
 }
 
-const body = { backgroundColor: "#f7f3ee", fontFamily: "sans-serif" };
+const body = {
+  backgroundColor: "#f7f3ee",
+  fontFamily: "sans-serif",
+  padding: "40px 16px",
+  margin: 0,
+};
 const container = {
   margin: "0 auto",
-  padding: "32px 24px",
+  padding: "44px 36px",
   maxWidth: "560px",
   backgroundColor: "#ffffff",
   borderRadius: "16px",
+  boxShadow: "0 2px 16px rgba(100,70,30,0.07)",
 };
 const h1 = {
   fontFamily: "Georgia, serif",
@@ -124,5 +130,5 @@ const footer = {
   textAlign: "center" as const,
   letterSpacing: "2px",
   textTransform: "uppercase" as const,
-  margin: "16px 0 0",
+  margin: "20px 0 4px",
 };
