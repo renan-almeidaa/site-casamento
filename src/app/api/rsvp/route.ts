@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { getDemoStore, newId } from "@/lib/demo-store";
-import { sendBrevoEmail, getNotificationEmail } from "@/lib/brevo";
+import { sendBrevoEmail, getNotificationEmails } from "@/lib/brevo";
 import { RsvpEmail } from "@/emails/RsvpEmail";
 import {
   rateLimit,
@@ -37,7 +37,7 @@ async function sendNotification(payload: {
   comment?: string | null;
 }) {
   const result = await sendBrevoEmail({
-    to: getNotificationEmail(),
+    to: getNotificationEmails(),
     subject: payload.confirmed
       ? `✨ ${payload.familyName} confirmou presença`
       : `🙏 ${payload.familyName} não poderá ir`,

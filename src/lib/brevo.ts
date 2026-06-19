@@ -2,7 +2,7 @@ import { render } from "@react-email/components";
 import type { ReactElement } from "react";
 
 export type BrevoSendInput = {
-  to: string;
+  to: string | string[];
   subject: string;
   react: ReactElement;
 };
@@ -17,8 +17,12 @@ export function getBrevoApiKey() {
   return key;
 }
 
-export function getNotificationEmail() {
-  return process.env.NOTIFICATION_EMAIL ?? "renangada@gmail.com";
+export function getNotificationEmails(): string[] {
+  const raw = process.env.NOTIFICATION_EMAIL ?? "renangada@gmail.com";
+  return raw
+    .split(",")
+    .map((e) => e.trim())
+    .filter(Boolean);
 }
 
 export function getFromEmail() {
@@ -71,7 +75,9 @@ export async function sendBrevoEmail(
       },
       body: JSON.stringify({
         sender: { name: getFromName(), email: from },
-        to: [{ email: input.to }],
+        to: (Array.isArray(input.to) ? input.to : [input.to]).map((email) => ({
+          email,
+        })),
         subject: input.subject,
         htmlContent: html,
       }),

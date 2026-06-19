@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { getDemoStore, newId } from "@/lib/demo-store";
-import { sendBrevoEmail, getNotificationEmail } from "@/lib/brevo";
+import { sendBrevoEmail, getNotificationEmails } from "@/lib/brevo";
 import { GiftPurchaseEmail } from "@/emails/GiftPurchaseEmail";
 import {
   rateLimit,
@@ -38,7 +38,7 @@ async function notify(payload: {
   paymentMethod: string;
 }) {
   const result = await sendBrevoEmail({
-    to: getNotificationEmail(),
+    to: getNotificationEmails(),
     subject: `🎁 ${payload.buyerName} registrou um presente`,
     react: GiftPurchaseEmail(payload),
   });

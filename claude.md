@@ -381,7 +381,7 @@ Variáveis de ambiente:
 BREVO_API_KEY=xkeysib-...
 BREVO_FROM_EMAIL=noreply@dominio-verificado.com   # precisa ser sender verificado no Brevo
 BREVO_FROM_NAME="Casamento Samara & Renan"        # opcional (default já é esse)
-NOTIFICATION_EMAIL=renangada@gmail.com
+NOTIFICATION_EMAIL=renangada@gmail.com,giordanisamara553@gmail.com   # separa por vírgula para múltiplos destinatários
 ```
 
 Setup no Brevo: criar conta em brevo.com → *Senders, Domains & Dedicated IPs* → verificar o email "from" (ou domínio inteiro via DNS) → *SMTP & API → API Keys* → gerar nova chave.
