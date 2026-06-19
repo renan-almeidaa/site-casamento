@@ -11,25 +11,53 @@ import {
   Clock,
   Loader2,
   UserPlus,
+  Pencil,
 } from "lucide-react";
 import type { AdminFamily } from "@/lib/admin-data";
 
 type Props = { initial: AdminFamily[] };
 
+type MemberDraft = { id?: string; name: string; isChild: boolean };
+
 export function FamiliasManager({ initial }: Props) {
   const [families, setFamilies] = useState(initial);
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState("");
-  const [members, setMembers] = useState<{ name: string; isChild: boolean }[]>([
+  const [members, setMembers] = useState<MemberDraft[]>([
     { name: "", isChild: false },
   ]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const isEditing = editingId !== null;
+
   const reset = () => {
+    setEditingId(null);
     setName("");
     setMembers([{ name: "", isChild: false }]);
     setError(null);
+  };
+
+  const openCreate = () => {
+    reset();
+    setOpen(true);
+  };
+
+  const openEdit = (f: AdminFamily) => {
+    setEditingId(f.id);
+    setName(f.name);
+    setMembers(
+      f.members.length > 0
+        ? f.members.map((m) => ({
+            id: m.id,
+            name: m.name,
+            isChild: m.isChild,
+          }))
+        : [{ name: "", isChild: false }],
+    );
+    setError(null);
+    setOpen(true);
   };
 
   const addRow = () =>
@@ -44,7 +72,7 @@ export function FamiliasManager({ initial }: Props) {
       return;
     }
     const cleaned = members
-      .map((m) => ({ name: m.name.trim(), isChild: m.isChild }))
+      .map((m) => ({ id: m.id, name: m.name.trim(), isChild: m.isChild }))
       .filter((m) => m.name.length > 0);
     if (cleaned.length === 0) {
       setError("Adicione pelo menos um integrante.");
@@ -52,25 +80,51 @@ export function FamiliasManager({ initial }: Props) {
     }
     setSubmitting(true);
     try {
-      const r = await fetch("/api/admin/families", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), members: cleaned }),
-      });
-      const data = (await r.json().catch(() => ({}))) as { ok?: boolean; id?: string; error?: string };
-      if (!r.ok) throw new Error(data.error ?? "Erro ao criar família");
-      const id = data.id ?? "temp";
-      const newFamily: AdminFamily = {
-        id,
-        name: name.trim(),
-        members: cleaned.map((m, idx) => ({
-          id: `temp-${idx}`,
-          name: m.name,
-          isChild: m.isChild,
-        })),
-        latestResponse: null,
-      };
-      setFamilies((fs) => [...fs, newFamily]);
+      if (isEditing && editingId) {
+        const r = await fetch(`/api/admin/families/${editingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: name.trim(), members: cleaned }),
+        });
+        const data = (await r.json().catch(() => ({}))) as {
+          ok?: boolean;
+          family?: AdminFamily;
+          error?: string;
+        };
+        if (!r.ok || !data.family)
+          throw new Error(data.error ?? "Erro ao salvar alterações");
+        const updated = data.family;
+        setFamilies((fs) =>
+          fs.map((f) => (f.id === editingId ? updated : f)),
+        );
+      } else {
+        const r = await fetch("/api/admin/families", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name.trim(),
+            members: cleaned.map((m) => ({ name: m.name, isChild: m.isChild })),
+          }),
+        });
+        const data = (await r.json().catch(() => ({}))) as {
+          ok?: boolean;
+          id?: string;
+          error?: string;
+        };
+        if (!r.ok) throw new Error(data.error ?? "Erro ao criar família");
+        const id = data.id ?? "temp";
+        const newFamily: AdminFamily = {
+          id,
+          name: name.trim(),
+          members: cleaned.map((m, idx) => ({
+            id: `temp-${idx}`,
+            name: m.name,
+            isChild: m.isChild,
+          })),
+          latestResponse: null,
+        };
+        setFamilies((fs) => [...fs, newFamily]);
+      }
       setOpen(false);
       reset();
     } catch (e) {
@@ -97,7 +151,7 @@ export function FamiliasManager({ initial }: Props) {
         </p>
         <button
           type="button"
-          onClick={() => setOpen(true)}
+          onClick={openCreate}
           className="inline-flex items-center gap-2 rounded-full bg-[var(--color-champagne-darker)] hover:bg-[var(--color-champagne-deep)] text-white py-2 px-4 text-[11px] tracking-[0.25em] uppercase font-medium"
         >
           <UserPlus size={13} /> Adicionar Família
@@ -121,14 +175,26 @@ export function FamiliasManager({ initial }: Props) {
                 <h3 className="font-[var(--font-display)] text-xl text-[var(--color-ink)] leading-tight">
                   {f.name}
                 </h3>
-                <button
-                  type="button"
-                  onClick={() => remove(f.id)}
-                  className="p-1.5 text-[var(--color-text-soft)] hover:text-red-700"
-                  aria-label="Remover família"
-                >
-                  <Trash2 size={14} />
-                </button>
+                <div className="flex items-center gap-0.5 -mr-1">
+                  <button
+                    type="button"
+                    onClick={() => openEdit(f)}
+                    className="p-1.5 text-[var(--color-text-soft)] hover:text-[var(--color-champagne-deep)]"
+                    aria-label="Editar família"
+                    title="Editar"
+                  >
+                    <Pencil size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => remove(f.id)}
+                    className="p-1.5 text-[var(--color-text-soft)] hover:text-red-700"
+                    aria-label="Remover família"
+                    title="Remover"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </header>
               <ul className="space-y-1 mb-3 text-sm">
                 {f.members.map((m) => {
@@ -200,7 +266,7 @@ export function FamiliasManager({ initial }: Props) {
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-[var(--font-display)] text-xl text-[var(--color-ink)]">
-                  Nova Família
+                  {isEditing ? "Editar Família" : "Nova Família"}
                 </h3>
                 <button
                   type="button"
@@ -304,6 +370,8 @@ export function FamiliasManager({ initial }: Props) {
                   >
                     {submitting ? (
                       <Loader2 size={13} className="animate-spin" />
+                    ) : isEditing ? (
+                      "Salvar alterações"
                     ) : (
                       "Salvar família"
                     )}

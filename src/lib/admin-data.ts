@@ -235,6 +235,147 @@ export async function addFamily(input: AddFamilyInput) {
   return id;
 }
 
+export type UpdateFamilyInput = {
+  name: string;
+  members: { id?: string; name: string; isChild: boolean }[];
+};
+
+export async function updateFamily(
+  id: string,
+  input: UpdateFamilyInput,
+): Promise<AdminFamily> {
+  const supa = createSupabaseServiceClient();
+  if (supa) {
+    const { data: family, error: famErr } = await supa
+      .from("families")
+      .select("id")
+      .eq("id", id)
+      .single();
+    if (famErr || !family) throw new Error("Família não encontrada");
+
+    const { error: updErr } = await supa
+      .from("families")
+      .update({ name: input.name })
+      .eq("id", id);
+    if (updErr) throw new Error(updErr.message);
+
+    const { data: existing } = await supa
+      .from("guests")
+      .select("id")
+      .eq("family_id", id);
+    const existingIds = new Set((existing ?? []).map((m) => m.id));
+    const inputIds = new Set(
+      input.members
+        .map((m) => m.id)
+        .filter((x): x is string => Boolean(x)),
+    );
+    const toDelete = [...existingIds].filter((eid) => !inputIds.has(eid));
+    const toUpdate = input.members.filter(
+      (m): m is { id: string; name: string; isChild: boolean } => !!m.id,
+    );
+    const toInsert = input.members.filter((m) => !m.id);
+
+    if (toDelete.length > 0) {
+      const { error: delErr } = await supa
+        .from("guests")
+        .delete()
+        .in("id", toDelete);
+      if (delErr) throw new Error(delErr.message);
+    }
+    for (const m of toUpdate) {
+      const { error: uErr } = await supa
+        .from("guests")
+        .update({ name: m.name, is_child: m.isChild })
+        .eq("id", m.id);
+      if (uErr) throw new Error(uErr.message);
+    }
+    if (toInsert.length > 0) {
+      const { error: insErr } = await supa.from("guests").insert(
+        toInsert.map((m) => ({
+          family_id: id,
+          name: m.name,
+          is_child: m.isChild,
+        })),
+      );
+      if (insErr) throw new Error(insErr.message);
+    }
+
+    const { data: finalGuests } = await supa
+      .from("guests")
+      .select("id, name, is_child")
+      .eq("family_id", id);
+    const { data: latest } = await supa
+      .from("rsvp_responses")
+      .select("confirmed, attending_guest_ids, created_at")
+      .eq("family_id", id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return {
+      id,
+      name: input.name,
+      members: (finalGuests ?? []).map((g) => ({
+        id: g.id,
+        name: g.name,
+        isChild: g.is_child,
+      })),
+      latestResponse: latest
+        ? {
+            confirmed: latest.confirmed,
+            attendingGuestIds: latest.attending_guest_ids,
+            createdAt: latest.created_at,
+          }
+        : null,
+    };
+  }
+
+  const store = getDemoStore();
+  const family = store.families.find((f) => f.id === id);
+  if (!family) throw new Error("Família não encontrada");
+  family.name = input.name;
+
+  const inputIds = new Set(
+    input.members.map((m) => m.id).filter((x): x is string => Boolean(x)),
+  );
+  store.guests = store.guests.filter(
+    (g) => g.family_id !== id || inputIds.has(g.id),
+  );
+  for (const m of input.members) {
+    if (m.id) {
+      const g = store.guests.find((x) => x.id === m.id);
+      if (g) {
+        g.name = m.name;
+        g.is_child = m.isChild;
+      }
+    } else {
+      store.guests.push({
+        id: newId(),
+        family_id: id,
+        name: m.name,
+        is_child: m.isChild,
+      });
+    }
+  }
+  const finalMembers = store.guests
+    .filter((g) => g.family_id === id)
+    .map((g) => ({ id: g.id, name: g.name, isChild: g.is_child }));
+  const latest = store.rsvp_responses
+    .filter((r) => r.family_id === id)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+  return {
+    id,
+    name: input.name,
+    members: finalMembers,
+    latestResponse: latest
+      ? {
+          confirmed: latest.confirmed,
+          attendingGuestIds: latest.attending_guest_ids,
+          createdAt: latest.created_at,
+        }
+      : null,
+  };
+}
+
 export async function deleteFamily(id: string) {
   const supa = createSupabaseServiceClient();
   if (supa) {
