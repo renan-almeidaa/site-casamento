@@ -268,6 +268,20 @@ export async function setGiftStatus(
   if (g) g.status = status;
 }
 
+export async function deleteRsvpResponse(id: string) {
+  const supa = createSupabaseServiceClient();
+  if (supa) {
+    const { error } = await supa
+      .from("rsvp_responses")
+      .delete()
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const store = getDemoStore();
+  store.rsvp_responses = store.rsvp_responses.filter((r) => r.id !== id);
+}
+
 export async function deleteGiftPurchase(id: string) {
   const supa = createSupabaseServiceClient();
   if (supa) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Download, Search } from "lucide-react";
+import { Download, Search, Trash2 } from "lucide-react";
 import type { AdminRsvp } from "@/lib/admin-data";
 
 type Filter = "todos" | "sim" | "nao";
@@ -15,9 +15,30 @@ const fmtDate = (iso: string) =>
     minute: "2-digit",
   }).format(new Date(iso));
 
-export function RsvpTable({ rsvps }: { rsvps: AdminRsvp[] }) {
+export function RsvpTable({
+  rsvps,
+  onRefresh,
+}: {
+  rsvps: AdminRsvp[];
+  onRefresh?: () => void;
+}) {
   const [filter, setFilter] = useState<Filter>("todos");
   const [q, setQ] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const handleDelete = async (r: AdminRsvp) => {
+    const ok = window.confirm(
+      `Apagar a resposta de "${r.familyName}" (${r.confirmed ? "confirmou" : "não vai"})?\n\nEssa ação não pode ser desfeita. Depois de apagar, a família poderá responder novamente pelo site.`,
+    );
+    if (!ok) return;
+    setBusy(r.id);
+    try {
+      await fetch(`/api/admin/rsvp-responses/${r.id}`, { method: "DELETE" });
+      onRefresh?.();
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const filtered = useMemo(() => {
     let list = rsvps;
@@ -132,6 +153,7 @@ export function RsvpTable({ rsvps }: { rsvps: AdminRsvp[] }) {
                 <th className="px-4 py-3 label-uppercase">Quem</th>
                 <th className="px-4 py-3 label-uppercase">Contato</th>
                 <th className="px-4 py-3 label-uppercase">Comentário</th>
+                <th className="px-4 py-3 label-uppercase">Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -176,6 +198,17 @@ export function RsvpTable({ rsvps }: { rsvps: AdminRsvp[] }) {
                   </td>
                   <td className="px-4 py-3 text-xs italic text-[var(--color-text-soft)] max-w-[260px]">
                     {r.comment || "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(r)}
+                      disabled={busy === r.id}
+                      title="Apagar resposta"
+                      className="p-1.5 rounded-lg text-[var(--color-text-soft)] hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
+                    >
+                      <Trash2 size={15} />
+                    </button>
                   </td>
                 </tr>
               ))}

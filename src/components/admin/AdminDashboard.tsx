@@ -152,12 +152,17 @@ function RsvpTab() {
   const [rsvps, setRsvps] = useState<AdminRsvp[] | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch("/api/admin/rsvp-responses")
-      .then((r) => r.json())
-      .then((d: { rsvps: AdminRsvp[] }) => setRsvps(d.rsvps))
-      .finally(() => setLoading(false));
+  const load = useCallback(async () => {
+    setLoading(true);
+    const res = await fetch("/api/admin/rsvp-responses");
+    const d = (await res.json()) as { rsvps: AdminRsvp[] };
+    setRsvps(d.rsvps);
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   if (loading) return <Spinner />;
 
@@ -170,7 +175,7 @@ function RsvpTab() {
           Lista de quem respondeu, ordenado pelas mais recentes.
         </p>
       </header>
-      <RsvpTable rsvps={rsvps ?? []} />
+      <RsvpTable rsvps={rsvps ?? []} onRefresh={load} />
     </div>
   );
 }

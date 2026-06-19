@@ -95,6 +95,23 @@ export async function POST(request: Request) {
         { status: 404 },
       );
     }
+
+    const { data: existing } = await supa
+      .from("rsvp_responses")
+      .select("id")
+      .eq("family_id", data.familyId)
+      .limit(1)
+      .maybeSingle();
+    if (existing) {
+      return NextResponse.json(
+        {
+          error:
+            "Esta família já enviou uma resposta. Se precisar alterar, entre em contato com os noivos pelo WhatsApp.",
+        },
+        { status: 409 },
+      );
+    }
+
     const { data: members } = await supa
       .from("guests")
       .select("id, name, is_child")
@@ -134,6 +151,15 @@ export async function POST(request: Request) {
   const family = store.families.find((f) => f.id === data.familyId);
   if (!family) {
     return NextResponse.json({ error: "Família não encontrada" }, { status: 404 });
+  }
+  if (store.rsvp_responses.some((r) => r.family_id === data.familyId)) {
+    return NextResponse.json(
+      {
+        error:
+          "Esta família já enviou uma resposta. Se precisar alterar, entre em contato com os noivos pelo WhatsApp.",
+      },
+      { status: 409 },
+    );
   }
   const members = store.guests.filter((g) => g.family_id === data.familyId);
   const attending = members.filter((m) =>
