@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { getDemoStore, newId } from "@/lib/demo-store";
-import {
-  getResend,
-  getNotificationEmail,
-  getFromEmail,
-} from "@/lib/resend";
+import { sendBrevoEmail, getNotificationEmail } from "@/lib/brevo";
 import { GiftPurchaseEmail } from "@/emails/GiftPurchaseEmail";
 import {
   rateLimit,
@@ -41,23 +37,17 @@ async function notify(payload: {
   total: number;
   paymentMethod: string;
 }) {
-  const resend = getResend();
-  if (!resend) {
-    console.info(
-      "[Presente] (sem Resend) Novo presente registrado",
+  const result = await sendBrevoEmail({
+    to: getNotificationEmail(),
+    subject: `🎁 ${payload.buyerName} registrou um presente`,
+    react: GiftPurchaseEmail(payload),
+  });
+  if (!result.ok) {
+    const logFn = result.reason === "not_configured" ? console.info : console.error;
+    logFn(
+      `[Presente] Email não enviado (${result.reason}): ${result.error}`,
       redact(payload as unknown as Record<string, unknown>),
     );
-    return;
-  }
-  try {
-    await resend.emails.send({
-      from: getFromEmail(),
-      to: getNotificationEmail(),
-      subject: `🎁 ${payload.buyerName} registrou um presente`,
-      react: GiftPurchaseEmail(payload),
-    });
-  } catch (err) {
-    console.error("[Presente] Erro ao enviar email", err);
   }
 }
 

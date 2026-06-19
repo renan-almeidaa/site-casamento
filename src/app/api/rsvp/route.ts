@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { getDemoStore, newId } from "@/lib/demo-store";
-import {
-  getResend,
-  getNotificationEmail,
-  getFromEmail,
-} from "@/lib/resend";
+import { sendBrevoEmail, getNotificationEmail } from "@/lib/brevo";
 import { RsvpEmail } from "@/emails/RsvpEmail";
 import {
   rateLimit,
@@ -40,25 +36,19 @@ async function sendNotification(payload: {
   email: string;
   comment?: string | null;
 }) {
-  const resend = getResend();
-  if (!resend) {
-    console.info(
-      "[RSVP] (sem Resend) Notificação ignorada.",
+  const result = await sendBrevoEmail({
+    to: getNotificationEmail(),
+    subject: payload.confirmed
+      ? `✨ ${payload.familyName} confirmou presença`
+      : `🙏 ${payload.familyName} não poderá ir`,
+    react: RsvpEmail(payload),
+  });
+  if (!result.ok) {
+    const logFn = result.reason === "not_configured" ? console.info : console.error;
+    logFn(
+      `[RSVP] Email não enviado (${result.reason}): ${result.error}`,
       redact(payload as unknown as Record<string, unknown>),
     );
-    return;
-  }
-  try {
-    await resend.emails.send({
-      from: getFromEmail(),
-      to: getNotificationEmail(),
-      subject: payload.confirmed
-        ? `✨ ${payload.familyName} confirmou presença`
-        : `🙏 ${payload.familyName} não poderá ir`,
-      react: RsvpEmail(payload),
-    });
-  } catch (err) {
-    console.error("[RSVP] Erro ao enviar email", err);
   }
 }
 
