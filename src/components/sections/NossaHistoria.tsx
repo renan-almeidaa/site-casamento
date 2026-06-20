@@ -41,7 +41,7 @@ export function NossaHistoria() {
               style={{ borderRadius: "2px" }}
             >
               <Image
-                src="/nossa-historia.png"
+                src="/nossa-historia.jpg"
                 alt="Samara e Renan"
                 fill
                 sizes="(max-width: 768px) 100vw, 480px"
