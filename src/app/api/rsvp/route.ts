@@ -19,8 +19,9 @@ const idSchema = z.string().min(1).max(64);
 
 const schema = z.object({
   familyId: idSchema,
-  confirmed: z.boolean(),
-  attendingGuestIds: z.array(idSchema).min(1).max(30),
+  // attendingGuestIds vazio = ninguém da família vai (decline implícito).
+  // Frontend já mostra um confirm() antes de submeter caso esteja vazio.
+  attendingGuestIds: z.array(idSchema).max(30),
   phone: z.string().min(8).max(30),
   email: z.string().email().max(254),
   comment: z.string().max(1000).optional().nullable(),
@@ -30,6 +31,7 @@ async function sendNotification(payload: {
   confirmed: boolean;
   familyName: string;
   attendingNames: string[];
+  notAttendingNames: string[];
   totalAdults: number;
   totalChildren: number;
   phone: string;
@@ -119,10 +121,14 @@ export async function POST(request: Request) {
     const attending = (members ?? []).filter((m) =>
       data.attendingGuestIds.includes(m.id),
     );
+    const notAttending = (members ?? []).filter(
+      (m) => !data.attendingGuestIds.includes(m.id),
+    );
+    const confirmed = attending.length > 0;
 
     const { error } = await supa.from("rsvp_responses").insert({
       family_id: data.familyId,
-      confirmed: data.confirmed,
+      confirmed,
       attending_guest_ids: data.attendingGuestIds,
       phone: data.phone,
       email: data.email,
@@ -134,9 +140,10 @@ export async function POST(request: Request) {
     }
 
     await sendNotification({
-      confirmed: data.confirmed,
+      confirmed,
       familyName: family.name,
       attendingNames: attending.map((m) => m.name),
+      notAttendingNames: notAttending.map((m) => m.name),
       totalAdults: attending.filter((m) => !m.is_child).length,
       totalChildren: attending.filter((m) => m.is_child).length,
       phone: data.phone,
@@ -165,10 +172,15 @@ export async function POST(request: Request) {
   const attending = members.filter((m) =>
     data.attendingGuestIds.includes(m.id),
   );
+  const notAttending = members.filter(
+    (m) => !data.attendingGuestIds.includes(m.id),
+  );
+  const confirmed = attending.length > 0;
+
   store.rsvp_responses.push({
     id: newId(),
     family_id: data.familyId,
-    confirmed: data.confirmed,
+    confirmed,
     attending_guest_ids: data.attendingGuestIds,
     phone: data.phone,
     email: data.email,
@@ -177,9 +189,10 @@ export async function POST(request: Request) {
   });
 
   await sendNotification({
-    confirmed: data.confirmed,
+    confirmed,
     familyName: family.name,
     attendingNames: attending.map((m) => m.name),
+    notAttendingNames: notAttending.map((m) => m.name),
     totalAdults: attending.filter((m) => !m.is_child).length,
     totalChildren: attending.filter((m) => m.is_child).length,
     phone: data.phone,

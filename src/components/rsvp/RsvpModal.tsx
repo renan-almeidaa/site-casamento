@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Search, Check, Loader2 } from "lucide-react";
+import { X, Search, Check, Loader2, Info, AlertTriangle } from "lucide-react";
 import { WEDDING } from "@/lib/wedding-data";
 import { maskPhone } from "@/lib/utils";
 import { Ornament, HorizontalDivider } from "@/components/ui/ornament";
@@ -21,10 +21,7 @@ type RsvpModalProps = {
 };
 
 export function RsvpModal({ open, onClose }: RsvpModalProps) {
-  const [step, setStep] = useState<
-    "form" | "submitting" | "success"
-  >("form");
-  const [confirmacao, setConfirmacao] = useState<"sim" | "nao" | null>(null);
+  const [step, setStep] = useState<"form" | "submitting" | "success">("form");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GuestSearchFamily[]>([]);
   const [showResults, setShowResults] = useState(false);
@@ -34,6 +31,7 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
   const [email, setEmail] = useState("");
   const [comment, setComment] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [submittedAsConfirmed, setSubmittedAsConfirmed] = useState(true);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -54,7 +52,6 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
       // reset on close
       const t = setTimeout(() => {
         setStep("form");
-        setConfirmacao(null);
         setQuery("");
         setResults([]);
         setShowResults(false);
@@ -64,6 +61,7 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
         setEmail("");
         setComment("");
         setError(null);
+        setSubmittedAsConfirmed(true);
       }, 300);
       return () => clearTimeout(t);
     }
@@ -95,7 +93,8 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
 
   const pickFamily = (f: GuestSearchFamily) => {
     setFamily(f);
-    setSelected(new Set(f.members.map((m) => m.id)));
+    // Todos começam desmarcados; o convidado marca ativamente quem vai.
+    setSelected(new Set());
     setQuery(f.name);
     setShowResults(false);
   };
@@ -111,21 +110,21 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
 
   const submit = async () => {
     setError(null);
-    if (!confirmacao) {
-      setError("Selecione se você irá ao casamento.");
-      return;
-    }
     if (!family) {
       setError("Pesquise e selecione seu nome na lista.");
-      return;
-    }
-    if (selected.size === 0) {
-      setError("Selecione pelo menos uma pessoa.");
       return;
     }
     if (!phone.trim() || !email.trim()) {
       setError("Telefone e e-mail são obrigatórios.");
       return;
+    }
+
+    const willAttend = selected.size > 0;
+    if (!willAttend) {
+      const ok = window.confirm(
+        "Você não marcou ninguém. Isso será registrado como: ninguém da família vai ao casamento. Tem certeza?",
+      );
+      if (!ok) return;
     }
 
     setStep("submitting");
@@ -135,7 +134,6 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           familyId: family.id,
-          confirmed: confirmacao === "sim",
           attendingGuestIds: Array.from(selected),
           phone,
           email,
@@ -143,21 +141,16 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
         }),
       });
       if (!r.ok) {
-        const data = (await r.json().catch(() => ({}))) as {
-          error?: string;
-        };
+        const data = (await r.json().catch(() => ({}))) as { error?: string };
         throw new Error(data.error ?? "Erro ao enviar resposta");
       }
+      setSubmittedAsConfirmed(willAttend);
       setStep("success");
     } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Erro ao enviar resposta",
-      );
+      setError(e instanceof Error ? e.message : "Erro ao enviar resposta");
       setStep("form");
     }
   };
-
-  const isYes = confirmacao === "sim";
 
   return (
     <AnimatePresence>
@@ -188,16 +181,19 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
             </button>
 
             {step === "success" ? (
-              <SuccessPanel isYes={isYes} onClose={onClose} />
+              <SuccessPanel
+                isConfirmed={submittedAsConfirmed}
+                onClose={onClose}
+              />
             ) : (
               <div className="p-6 sm:p-8">
-                <header className="text-center mb-6">
+                <header className="text-center mb-5">
                   <Ornament className="mb-3" />
                   <p className="label-uppercase">Confirmação de Presença</p>
                   <h2 className="heading-display text-3xl mt-2">
                     Nosso Grande Dia
                   </h2>
-                  <p className="font-[var(--font-display)] italic text-[var(--color-champagne-deep)] mt-1">
+                  <p className="italic-romance text-[var(--color-champagne-deep)] mt-1">
                     {WEDDING.coupleName}
                   </p>
                   <HorizontalDivider className="my-4" />
@@ -206,26 +202,32 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
                   </p>
                 </header>
 
-                <div className="space-y-4">
-                  <div className="card-soft p-5">
-                    <p className="text-sm font-medium text-[var(--color-ink)] mb-3">
-                      Você irá ao casamento?{" "}
-                      <span className="text-[var(--color-champagne)]">*</span>
+                {/* Instruções + aviso, sempre visíveis */}
+                <div className="space-y-2.5 mb-4">
+                  <div className="flex items-start gap-2.5 text-sm leading-relaxed text-[var(--color-text)] bg-[var(--color-cream-soft)] border border-[var(--color-border-soft)] rounded-xl px-4 py-3">
+                    <Info
+                      size={16}
+                      className="text-[var(--color-champagne-deep)] mt-0.5 shrink-0"
+                    />
+                    <p>
+                      Pesquise sua família e <strong>marque quem irá</strong>.
+                      Quem não for marcado entra como ausente.
                     </p>
-                    <div className="flex flex-col gap-2.5">
-                      <RadioOption
-                        label="Sim, estarei lá! 🎉"
-                        checked={confirmacao === "sim"}
-                        onChange={() => setConfirmacao("sim")}
-                      />
-                      <RadioOption
-                        label="Infelizmente não poderei ir"
-                        checked={confirmacao === "nao"}
-                        onChange={() => setConfirmacao("nao")}
-                      />
-                    </div>
                   </div>
+                  <div className="flex items-start gap-2.5 text-xs leading-relaxed text-[var(--color-text-soft)] bg-[rgba(196,168,130,0.10)] border border-[rgba(196,168,130,0.35)] rounded-xl px-4 py-3">
+                    <AlertTriangle
+                      size={14}
+                      className="text-[var(--color-champagne-deep)] mt-0.5 shrink-0"
+                    />
+                    <p>
+                      A resposta <strong>não pode ser alterada</strong> depois de
+                      enviada. Em caso de mudança, fale direto com Renan ou
+                      Samara.
+                    </p>
+                  </div>
+                </div>
 
+                <div className="space-y-4">
                   <div className="card-soft p-5">
                     <p className="text-sm font-medium text-[var(--color-ink)] mb-3">
                       Pesquise seu nome na lista{" "}
@@ -270,9 +272,7 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
                     {family && (
                       <div className="mt-4">
                         <p className="label-uppercase mb-2">
-                          {isYes
-                            ? "Quem vai ao casamento?"
-                            : "Quem não poderá ir?"}
+                          Marque quem irá ao casamento
                         </p>
                         <div className="flex flex-col gap-2">
                           {family.members.map((m) => {
@@ -357,11 +357,7 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
                     <textarea
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
-                      placeholder={
-                        isYes
-                          ? "Mensagem, restrição alimentar ou observação..."
-                          : "Deixe uma mensagem para os noivos..."
-                      }
+                      placeholder="Mensagem, restrição alimentar ou observação..."
                       className="input-soft min-h-[80px] resize-none"
                     />
                   </div>
@@ -384,8 +380,6 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
                           <Loader2 size={16} className="animate-spin" />
                           Enviando...
                         </>
-                      ) : isYes ? (
-                        "Confirmar Presença"
                       ) : (
                         "Enviar Resposta"
                       )}
@@ -401,44 +395,11 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
   );
 }
 
-function RadioOption({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string;
-  checked: boolean;
-  onChange: () => void;
-}) {
-  return (
-    <label className="flex items-center gap-3 cursor-pointer">
-      <span
-        className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-colors ${
-          checked
-            ? "border-[var(--color-champagne-light)]"
-            : "border-[#d4c0a8]"
-        }`}
-      >
-        {checked && (
-          <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-champagne-light)]" />
-        )}
-      </span>
-      <input
-        type="radio"
-        className="sr-only"
-        checked={checked}
-        onChange={onChange}
-      />
-      <span className="text-sm text-[var(--color-text)]">{label}</span>
-    </label>
-  );
-}
-
 function SuccessPanel({
-  isYes,
+  isConfirmed,
   onClose,
 }: {
-  isYes: boolean;
+  isConfirmed: boolean;
   onClose: () => void;
 }) {
   return (
@@ -449,13 +410,13 @@ function SuccessPanel({
         transition={{ type: "spring", stiffness: 220, damping: 18 }}
         className="text-5xl mb-4"
       >
-        {isYes ? "💍" : "🙏"}
+        {isConfirmed ? "💍" : "🙏"}
       </motion.div>
       <h2 className="heading-display text-3xl mb-3">
-        {isYes ? "Presença Confirmada!" : "Resposta Registrada!"}
+        {isConfirmed ? "Presença Confirmada!" : "Resposta Registrada!"}
       </h2>
       <p className="text-[var(--color-text-soft)] leading-relaxed">
-        {isYes
+        {isConfirmed
           ? "Obrigado por responder! Estamos muito felizes em saber que você estará com a gente. Até o grande dia! 🌸"
           : "Agradecemos por nos avisar. Sentiremos muito a sua falta, mas estaremos juntos em espírito! 💛"}
       </p>

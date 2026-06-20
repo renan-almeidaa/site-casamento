@@ -14,6 +14,7 @@ type Props = {
   confirmed: boolean;
   familyName: string;
   attendingNames: string[];
+  notAttendingNames: string[];
   totalAdults: number;
   totalChildren: number;
   phone: string;
@@ -25,6 +26,7 @@ export function RsvpEmail({
   confirmed,
   familyName,
   attendingNames,
+  notAttendingNames,
   totalAdults,
   totalChildren,
   phone,
@@ -50,19 +52,29 @@ export function RsvpEmail({
             <Text style={label}>Família</Text>
             <Text style={value}>{familyName}</Text>
           </Section>
-          <Section>
-            <Text style={label}>Resposta</Text>
-            <Text style={value}>
-              {confirmed
-                ? `Confirmado(s): ${attendingNames.join(", ")}`
-                : `Não poderão ir: ${attendingNames.join(", ")}`}
-            </Text>
-            {confirmed && (
+          {attendingNames.length > 0 && (
+            <Section>
+              <Text style={label}>Vão ao casamento</Text>
+              <Text style={value}>{attendingNames.join(", ")}</Text>
               <Text style={small}>
                 {totalAdults} adulto(s) · {totalChildren} criança(s)
               </Text>
-            )}
-          </Section>
+            </Section>
+          )}
+          {notAttendingNames.length > 0 && (
+            <Section>
+              <Text style={label}>Não vão</Text>
+              <Text style={value}>{notAttendingNames.join(", ")}</Text>
+            </Section>
+          )}
+          {!confirmed && notAttendingNames.length === 0 && (
+            <Section>
+              <Text style={label}>Resposta</Text>
+              <Text style={value}>
+                Ninguém da família poderá comparecer.
+              </Text>
+            </Section>
+          )}
           <Hr style={hr} />
           <Section>
             <Text style={label}>Contato</Text>
