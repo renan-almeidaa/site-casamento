@@ -22,7 +22,7 @@ export function Hero() {
     >
       {/* Foto principal */}
       <Image
-        src="/fotos-do-casal/foto-1.png"
+        src="/fotos-do-casal/foto inicial.jpg"
         alt="Samara e Renan"
         fill
         priority
