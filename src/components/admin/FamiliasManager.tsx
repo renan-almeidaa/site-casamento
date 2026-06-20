@@ -108,22 +108,12 @@ export function FamiliasManager({ initial }: Props) {
         });
         const data = (await r.json().catch(() => ({}))) as {
           ok?: boolean;
-          id?: string;
+          family?: AdminFamily;
           error?: string;
         };
-        if (!r.ok) throw new Error(data.error ?? "Erro ao criar família");
-        const id = data.id ?? "temp";
-        const newFamily: AdminFamily = {
-          id,
-          name: name.trim(),
-          members: cleaned.map((m, idx) => ({
-            id: `temp-${idx}`,
-            name: m.name,
-            isChild: m.isChild,
-          })),
-          latestResponse: null,
-        };
-        setFamilies((fs) => [...fs, newFamily]);
+        if (!r.ok || !data.family)
+          throw new Error(data.error ?? "Erro ao criar família");
+        setFamilies((fs) => [...fs, data.family!]);
       }
       setOpen(false);
       reset();

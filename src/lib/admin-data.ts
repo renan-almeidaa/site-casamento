@@ -195,27 +195,43 @@ export type AddFamilyInput = {
   members: { name: string; isChild: boolean }[];
 };
 
-export async function addFamily(input: AddFamilyInput) {
+export async function addFamily(input: AddFamilyInput): Promise<AdminFamily> {
   const supa = createSupabaseServiceClient();
   if (supa) {
     const { data: family, error } = await supa
       .from("families")
       .insert({ name: input.name })
-      .select("id")
+      .select("id, name")
       .single();
     if (error || !family) throw new Error(error?.message ?? "Erro");
+
+    let members: AdminFamily["members"] = [];
     if (input.members.length > 0) {
-      const { error: gErr } = await supa.from("guests").insert(
-        input.members.map((m) => ({
-          family_id: family.id,
-          name: m.name,
-          is_child: m.isChild,
-        })),
-      );
+      const { data: insertedGuests, error: gErr } = await supa
+        .from("guests")
+        .insert(
+          input.members.map((m) => ({
+            family_id: family.id,
+            name: m.name,
+            is_child: m.isChild,
+          })),
+        )
+        .select("id, name, is_child");
       if (gErr) throw new Error(gErr.message);
+      members = (insertedGuests ?? []).map((g) => ({
+        id: g.id,
+        name: g.name,
+        isChild: g.is_child,
+      }));
     }
-    return family.id as string;
+    return {
+      id: family.id,
+      name: family.name,
+      members,
+      latestResponse: null,
+    };
   }
+
   const store = getDemoStore();
   const id = newId();
   store.families.push({
@@ -224,15 +240,23 @@ export async function addFamily(input: AddFamilyInput) {
     notes: null,
     created_at: new Date().toISOString(),
   });
+  const members: AdminFamily["members"] = [];
   for (const m of input.members) {
+    const memberId = newId();
     store.guests.push({
-      id: newId(),
+      id: memberId,
       family_id: id,
       name: m.name,
       is_child: m.isChild,
     });
+    members.push({ id: memberId, name: m.name, isChild: m.isChild });
   }
-  return id;
+  return {
+    id,
+    name: input.name,
+    members,
+    latestResponse: null,
+  };
 }
 
 export type UpdateFamilyInput = {

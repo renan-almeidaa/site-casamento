@@ -40,8 +40,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
   }
   try {
-    const id = await addFamily(parsed.data);
-    return NextResponse.json({ ok: true, id });
+    const family = await addFamily(parsed.data);
+    return NextResponse.json({ ok: true, family });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Erro" },
