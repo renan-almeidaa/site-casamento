@@ -11,6 +11,11 @@ export const runtime = "nodejs";
 const SEARCH_LIMIT = 200; // por minuto por IP
 const SEARCH_WINDOW_MS = 60_000;
 
+// Remove acentos pra busca tolerante: "Cláudio" e "Claudio" matcham,
+// "Ângela" e "angela" matcham, "Conceição" e "conceicao" matcham.
+const fold = (s: string) =>
+  s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
 export async function GET(request: Request) {
   const ip = getClientIp(request);
   if (!rateLimit(`guests-search:${ip}`, SEARCH_LIMIT, SEARCH_WINDOW_MS)) {
@@ -19,39 +24,41 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   // Limita a query a 60 chars — nomes brasileiros raramente passam disso e
-  // evita strings absurdamente longas em ilike (custo na DB).
+  // evita strings absurdamente longas.
   const rawQ = (searchParams.get("q") ?? "").trim().slice(0, 60);
-  // Sanitiza wildcards do Postgres ilike para que o convidado não consiga
-  // forçar varreduras esquisitas (% e _) — escapa-os.
-  const q = rawQ.replace(/[%_\\]/g, "\\$&").toLowerCase();
-  if (q.length < 2) return NextResponse.json({ families: [] });
+  if (rawQ.length < 2) return NextResponse.json({ families: [] });
+
+  const qNorm = fold(rawQ);
 
   const supa = createSupabaseServiceClient();
   if (supa) {
-    const { data: matchingGuests } = await supa
+    // Busca todos os guests (~50-200 rows num casamento típico, ~5-10 KB)
+    // e filtra em JS pra suportar tolerância de acentos. Não dá pra usar
+    // ILIKE direto porque Postgres por padrão é accent-sensitive, e ativar
+    // o unaccent exigiria migration.
+    const { data: allGuests } = await supa
       .from("guests")
-      .select("family_id")
-      .ilike("name", `%${q}%`)
-      .limit(20);
-    const familyIds = Array.from(
-      new Set((matchingGuests ?? []).map((g) => g.family_id)),
+      .select("id, family_id, name, is_child");
+
+    const matching = (allGuests ?? []).filter((g) =>
+      fold(g.name).includes(qNorm),
     );
-    if (familyIds.length === 0) return NextResponse.json({ families: [] });
+    if (matching.length === 0) return NextResponse.json({ families: [] });
+
+    const familyIds = Array.from(new Set(matching.map((g) => g.family_id))).slice(
+      0,
+      6,
+    );
 
     const { data: families } = await supa
       .from("families")
       .select("id, name")
-      .in("id", familyIds)
-      .limit(6);
-    const { data: members } = await supa
-      .from("guests")
-      .select("id, family_id, name, is_child")
-      .in("family_id", familyIds);
+      .in("id", familyIds);
 
     const result = (families ?? []).map((f) => ({
       id: f.id,
       name: f.name,
-      members: (members ?? [])
+      members: (allGuests ?? [])
         .filter((m) => m.family_id === f.id)
         .map((m) => ({ id: m.id, name: m.name, isChild: m.is_child })),
     }));
@@ -60,11 +67,12 @@ export async function GET(request: Request) {
 
   // Fallback demo
   const store = getDemoStore();
-  const matching = store.guests.filter((g) =>
-    g.name.toLowerCase().includes(q),
+  const matching = store.guests.filter((g) => fold(g.name).includes(qNorm));
+  const familyIds = Array.from(new Set(matching.map((g) => g.family_id))).slice(
+    0,
+    6,
   );
-  const familyIds = Array.from(new Set(matching.map((g) => g.family_id)));
-  const result = familyIds.slice(0, 6).map((fid) => {
+  const result = familyIds.map((fid) => {
     const f = store.families.find((x) => x.id === fid)!;
     return {
       id: f.id,
