@@ -16,7 +16,7 @@ export function IntroOverlay() {
     if (seen) return;
     setShow(true);
     sessionStorage.setItem(SESSION_KEY, "1");
-    const t = setTimeout(() => setShow(false), 2400);
+    const t = setTimeout(() => setShow(false), 2600);
     return () => clearTimeout(t);
   }, []);
 
@@ -26,31 +26,95 @@ export function IntroOverlay() {
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}
           className="fixed inset-0 z-[150] flex items-center justify-center bg-[var(--color-cream)]"
           aria-hidden
         >
+          {/* Frame editorial */}
+          <div
+            className="absolute top-8 left-8 right-8 bottom-8 hidden md:block"
+            style={{ border: "1px solid var(--color-border-soft)" }}
+          />
+
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-center px-6"
+            initial="hidden"
+            animate="show"
+            variants={{
+              hidden: {},
+              show: {
+                transition: { staggerChildren: 0.16, delayChildren: 0.15 },
+              },
+            }}
+            className="text-center px-6 max-w-2xl"
           >
-            <Ornament width={50} className="mb-5" />
-            <p className="label-uppercase mb-4">Save the date</p>
-            <h1 className="heading-display text-5xl sm:text-6xl md:text-7xl mb-3">
-              Vamos nos casar
-            </h1>
-            <p
-              className="font-[var(--font-display)] text-2xl md:text-3xl italic"
-              style={{ color: "var(--color-champagne-deep)" }}
+            <motion.p
+              variants={{
+                hidden: { opacity: 0, y: 8 },
+                show: { opacity: 1, y: 0, transition: { duration: 0.7 } },
+              }}
+              className="label-uppercase mb-7"
+            >
+              Save the date
+            </motion.p>
+
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, scaleX: 0 },
+                show: {
+                  opacity: 1,
+                  scaleX: 1,
+                  transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] },
+                },
+              }}
+              className="mb-8"
+            >
+              <Ornament width={48} />
+            </motion.div>
+
+            <motion.h1
+              variants={{
+                hidden: { opacity: 0, y: 18 },
+                show: { opacity: 1, y: 0, transition: { duration: 0.9 } },
+              }}
+              className="heading-hairline text-[clamp(2.8rem,9vw,6.2rem)] mb-6"
+            >
+              <span className="block">Vamos</span>
+              <span className="italic-romance font-light text-[var(--color-champagne-deep)]">
+                nos casar
+              </span>
+            </motion.h1>
+
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, scaleX: 0 },
+                show: {
+                  opacity: 1,
+                  scaleX: 1,
+                  transition: { duration: 0.7, ease: [0.2, 0.8, 0.2, 1] },
+                },
+              }}
+              className="mx-auto mt-6 mb-5 h-px w-12 bg-[var(--color-champagne-deep)]"
+            />
+
+            <motion.p
+              variants={{
+                hidden: { opacity: 0, y: 8 },
+                show: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+              }}
+              className="italic-romance text-xl md:text-2xl text-[var(--color-text)]"
             >
               {WEDDING.coupleName}
-            </p>
-            <div className="mx-auto mt-5 h-px w-12 bg-[var(--color-champagne)]" />
-            <p className="mt-5 text-xs tracking-[0.4em] uppercase text-[var(--color-champagne-light)]">
+            </motion.p>
+
+            <motion.p
+              variants={{
+                hidden: { opacity: 0, y: 6 },
+                show: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+              }}
+              className="mt-7 text-[10px] tracking-[0.55em] uppercase font-medium text-[var(--color-champagne-deep)]"
+            >
               {WEDDING.dateShort}
-            </p>
+            </motion.p>
           </motion.div>
         </motion.div>
       )}

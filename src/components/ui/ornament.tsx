@@ -1,40 +1,115 @@
 type OrnamentProps = {
   width?: number;
   className?: string;
+  tone?: "deep" | "light";
 };
 
-export function Ornament({ width = 60, className }: OrnamentProps) {
+/**
+ * Marca editorial: linha fina · ponto · diamante · ponto · linha fina.
+ * Inspirado em filigrana de convite gravado, sem cair em coração-cliche.
+ */
+export function Ornament({ width = 60, className, tone = "deep" }: OrnamentProps) {
+  const color =
+    tone === "deep"
+      ? "var(--color-champagne-deep)"
+      : "var(--color-champagne)";
   return (
     <div
-      className={`flex items-center justify-center gap-3 ${className ?? ""}`}
+      className={`flex items-center justify-center gap-2 ${className ?? ""}`}
       aria-hidden
     >
       <div
-        className="ornament-line"
-        style={{ width }}
+        style={{
+          width,
+          height: "1px",
+          background: `linear-gradient(to right, transparent, ${color} 80%)`,
+        }}
+      />
+      <div
+        style={{
+          width: "3px",
+          height: "3px",
+          background: color,
+          borderRadius: "9999px",
+        }}
       />
       <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        className="text-[var(--color-champagne)]"
+        width="9"
+        height="9"
+        viewBox="0 0 10 10"
+        aria-hidden
+        style={{ color }}
       >
-        <path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z" />
+        <path
+          d="M5 0.5 L9.5 5 L5 9.5 L0.5 5 Z"
+          fill="currentColor"
+          opacity="0.95"
+        />
       </svg>
       <div
-        className="ornament-line-reverse"
-        style={{ width }}
+        style={{
+          width: "3px",
+          height: "3px",
+          background: color,
+          borderRadius: "9999px",
+        }}
+      />
+      <div
+        style={{
+          width,
+          height: "1px",
+          background: `linear-gradient(to left, transparent, ${color} 80%)`,
+        }}
       />
     </div>
   );
 }
 
-export function HorizontalDivider({ className }: { className?: string }) {
+export function HorizontalDivider({
+  className,
+  width = 32,
+}: {
+  className?: string;
+  width?: number;
+}) {
   return (
     <div
-      className={`mx-auto h-px w-10 bg-[var(--color-champagne)] ${className ?? ""}`}
+      className={`mx-auto ${className ?? ""}`}
+      style={{
+        height: "1px",
+        width,
+        background: "var(--color-champagne-deep)",
+      }}
       aria-hidden
     />
+  );
+}
+
+/**
+ * Marca vertical fina — ideal pra usar como "sello" no canto de seções
+ * ou como separador entre blocos.
+ */
+export function VerticalMark({ height = 64 }: { height?: number }) {
+  return (
+    <div
+      className="mx-auto flex flex-col items-center gap-1.5"
+      aria-hidden
+    >
+      <div
+        style={{
+          width: "1px",
+          height,
+          background: "var(--color-champagne-deep)",
+        }}
+      />
+      <div
+        style={{
+          width: "5px",
+          height: "5px",
+          background: "var(--color-champagne-deep)",
+          transform: "rotate(45deg)",
+        }}
+      />
+    </div>
   );
 }

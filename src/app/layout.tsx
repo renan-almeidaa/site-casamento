@@ -1,20 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Jost } from "next/font/google";
+import { Fraunces, Bricolage_Grotesque } from "next/font/google";
 import { ToasterProvider } from "@/components/ui/toaster";
 import "./globals.css";
 
-const cormorant = Cormorant_Garamond({
+const fraunces = Fraunces({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+  weight: ["200", "300", "400", "500", "600", "700", "800", "900"],
   style: ["normal", "italic"],
-  variable: "--font-cormorant",
+  variable: "--font-fraunces",
   display: "swap",
 });
 
-const jost = Jost({
+const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  variable: "--font-jost",
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-bricolage",
   display: "swap",
 });
 
@@ -45,7 +45,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR" className={`${cormorant.variable} ${jost.variable}`}>
+    <html lang="pt-BR" className={`${fraunces.variable} ${bricolage.variable}`}>
       <body>
         <ToasterProvider>{children}</ToasterProvider>
       </body>

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Copy, CreditCard, Gift, Layers } from "lucide-react";
+import { Copy, CreditCard, Gift } from "lucide-react";
 import { WEDDING } from "@/lib/wedding-data";
 import { useToast } from "@/components/ui/toaster";
 import { SectionHeader } from "./SectionHeader";
@@ -19,146 +19,183 @@ export function PresentesCta() {
   return (
     <section
       id="presentes"
-      className="relative py-20 md:py-28 px-5 bg-[var(--color-cream-soft)] overflow-hidden"
+      className="relative py-24 md:py-32 px-5 overflow-hidden"
     >
-      <div className="pointer-events-none absolute -left-24 top-1/4 h-72 w-72 rounded-full bg-[var(--color-pastel-mint)] opacity-25 blur-3xl" />
-      <div className="pointer-events-none absolute -right-24 bottom-1/4 h-72 w-72 rounded-full bg-[var(--color-pastel-rose)] opacity-25 blur-3xl" />
-
       <div className="relative max-w-5xl mx-auto">
         <SectionHeader
           eyebrow="Lista de Presentes"
           title="Sua presença é o maior presente"
-          subtitle="Como vocês já sabem, a fase de preparação para o casamento é desafiadora e requer muito esforço, tanto espiritual quanto material. Quem quiser nos abençoar com algo a mais, pode escolher uma das opções abaixo."
+          subtitle="A fase de preparação para o casamento é desafiadora e requer muito esforço, tanto espiritual quanto material. Quem quiser nos abençoar com algo a mais, pode escolher uma das opções abaixo."
         />
 
-        <div className="mt-12 grid md:grid-cols-2 gap-5 md:gap-7">
+        <div className="mt-20 grid md:grid-cols-2 gap-6 md:gap-8">
           {/* PIX card */}
           <motion.article
-            initial={{ opacity: 0, y: 18 }}
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.6 }}
-            className="card-soft p-7 md:p-9 flex flex-col items-center text-center relative overflow-hidden"
+            transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}
+            className="card-envelope p-8 md:p-10 flex flex-col items-center text-center relative"
           >
-            <div
-              className="absolute -top-12 -left-12 w-32 h-32 rounded-full opacity-50 blur-2xl"
-              style={{ background: "var(--color-pastel-sky)" }}
+            {/* Número romano decorativo */}
+            <span
               aria-hidden
-            />
-            <div className="relative w-full flex flex-col items-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[var(--color-cream)] border border-[var(--color-border-soft)] text-[var(--color-champagne-deep)] mb-4">
-                <Layers size={20} strokeWidth={1.5} />
-              </div>
-              <p className="label-uppercase mb-2">PIX</p>
-              <h3 className="font-[var(--font-display)] font-light text-2xl md:text-3xl text-[var(--color-ink)] leading-tight mb-3">
-                Contribua via PIX
-              </h3>
-              <p className="font-[var(--font-display)] italic text-[var(--color-text-soft)] max-w-sm">
-                Casar é um sonho, e também um novo começo. Toda contribuição
-                nos ajuda a construir nosso primeiro lar.
-              </p>
+              className="absolute top-5 right-6 font-[var(--font-display)] font-extralight text-[2.5rem] leading-none opacity-15 select-none"
+              style={{ color: "var(--color-champagne-deep)" }}
+            >
+              I
+            </span>
 
+            <p className="label-uppercase mb-3">Contribuição</p>
+            <h3
+              className="font-[var(--font-display)] font-extralight text-3xl md:text-4xl tracking-[-0.025em] leading-[1.05] mb-4"
+              style={{ color: "var(--color-ink)" }}
+            >
+              Pague via <span className="italic-romance text-[var(--color-champagne-deep)]">PIX</span>
+            </h3>
+            <div
+              aria-hidden
+              className="h-px w-10 mb-5"
+              style={{ background: "var(--color-champagne-deep)" }}
+            />
+            <p
+              className="italic-romance text-[var(--color-text-soft)] max-w-sm leading-[1.65]"
+            >
+              Casar é um sonho, e também um novo começo. Toda contribuição
+              nos ajuda a construir nosso primeiro lar.
+            </p>
+
+            <a
+              href={WEDDING.payment.pixQrLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Pagar via PIX (abre o app do Nubank)"
+              className="mt-7 inline-block bg-white p-3 hover:scale-[1.02] transition-transform"
+              style={{
+                border: "1px solid var(--color-border-soft)",
+                borderRadius: "2px",
+              }}
+            >
+              <Image
+                src="/qrcode.png"
+                alt="QR Code PIX"
+                width={160}
+                height={160}
+                className="block"
+              />
+            </a>
+            <p className="mt-3 text-[10px] tracking-[0.35em] uppercase text-[var(--color-champagne-light)]">
+              Escaneie ou clique para abrir
+            </p>
+
+            <div className="mt-6 w-full max-w-xs space-y-2.5">
+              <button
+                type="button"
+                onClick={() =>
+                  copy(WEDDING.payment.pixEmail, "Chave PIX copiada!")
+                }
+                className="w-full inline-flex items-center justify-between gap-2 hover:bg-[var(--color-cream-deep)] py-3 px-4 text-xs text-[var(--color-text)] transition-colors"
+                style={{
+                  border: "1px solid var(--color-border-soft)",
+                  borderRadius: "2px",
+                  background: "var(--color-cream-soft)",
+                }}
+              >
+                <span className="font-medium truncate">
+                  {WEDDING.payment.pixEmail}
+                </span>
+                <Copy
+                  size={13}
+                  className="text-[var(--color-champagne-deep)] flex-shrink-0"
+                />
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  copy(
+                    WEDDING.payment.pixCopiaCola,
+                    "Código copia-e-cola copiado!",
+                  )
+                }
+                className="w-full text-[10px] tracking-[0.35em] uppercase text-[var(--color-champagne-deep)] hover:text-[var(--color-champagne-darker)] py-1.5 transition-colors"
+              >
+                Copiar código copia-e-cola
+              </button>
               <a
-                href={WEDDING.payment.pixQrLink}
+                href={WEDDING.payment.mercadoPagoLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Pagar via PIX (abre o app do Nubank)"
-                className="mt-6 inline-block rounded-2xl bg-white p-3 border border-[var(--color-border-soft)] hover:scale-[1.02] transition-transform"
+                className="w-full inline-flex items-center justify-center gap-2 border border-[var(--color-champagne-deep)] text-[var(--color-champagne-darker)] hover:bg-[var(--color-champagne-darker)] hover:text-[var(--color-cream)] py-3 px-4 text-[10px] tracking-[0.35em] uppercase font-medium transition-colors"
+                style={{ borderRadius: "999px" }}
               >
-                <Image
-                  src="/qrcode.png"
-                  alt="QR Code PIX"
-                  width={150}
-                  height={150}
-                  className="block"
-                />
+                <CreditCard size={12} /> Pagar com cartão
               </a>
-              <p className="mt-3 text-xs text-[var(--color-text-soft)] italic">
-                Escaneie o QR Code ou clique para abrir
-              </p>
-
-              <div className="mt-5 w-full max-w-xs space-y-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    copy(WEDDING.payment.pixEmail, "Chave PIX copiada!")
-                  }
-                  className="w-full inline-flex items-center justify-between gap-2 rounded-full border border-[var(--color-border-soft)] hover:bg-[var(--color-cream)] py-2.5 px-4 text-xs text-[var(--color-text)] transition-colors"
-                >
-                  <span className="font-medium truncate">
-                    {WEDDING.payment.pixEmail}
-                  </span>
-                  <Copy size={13} className="text-[var(--color-champagne-deep)] flex-shrink-0" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    copy(WEDDING.payment.pixCopiaCola, "Código copia-e-cola copiado!")
-                  }
-                  className="w-full text-[10px] tracking-[0.25em] uppercase text-[var(--color-champagne-deep)] hover:text-[var(--color-champagne)] py-1"
-                >
-                  Copiar código copia-e-cola
-                </button>
-                <a
-                  href={WEDDING.payment.mercadoPagoLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-full border border-[var(--color-champagne)] text-[var(--color-champagne-deep)] hover:bg-[var(--color-champagne)] hover:text-white py-2.5 px-4 text-[11px] tracking-[0.25em] uppercase transition-colors"
-                >
-                  <CreditCard size={13} /> Pagar com cartão
-                </a>
-              </div>
             </div>
           </motion.article>
 
           {/* Presente Especial card */}
           <motion.article
-            initial={{ opacity: 0, y: 18 }}
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="card-soft p-7 md:p-9 flex flex-col items-center text-center relative overflow-hidden"
+            transition={{ duration: 0.7, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
+            className="card-envelope p-8 md:p-10 flex flex-col items-center text-center relative"
           >
-            <div
-              className="absolute -top-12 -right-12 w-32 h-32 rounded-full opacity-50 blur-2xl"
-              style={{ background: "var(--color-pastel-salmon)" }}
+            <span
               aria-hidden
+              className="absolute top-5 right-6 font-[var(--font-display)] font-extralight text-[2.5rem] leading-none opacity-15 select-none"
+              style={{ color: "var(--color-champagne-deep)" }}
+            >
+              II
+            </span>
+
+            <p className="label-uppercase mb-3">Lista</p>
+            <h3
+              className="font-[var(--font-display)] font-extralight text-3xl md:text-4xl tracking-[-0.025em] leading-[1.05] mb-4"
+              style={{ color: "var(--color-ink)" }}
+            >
+              Presente <span className="italic-romance text-[var(--color-champagne-deep)]">especial</span>
+            </h3>
+            <div
+              aria-hidden
+              className="h-px w-10 mb-5"
+              style={{ background: "var(--color-champagne-deep)" }}
             />
-            <div className="relative w-full flex flex-col items-center flex-1">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[var(--color-cream)] border border-[var(--color-border-soft)] text-[var(--color-champagne-deep)] mb-4">
-                <Gift size={20} strokeWidth={1.5} />
-              </div>
-              <p className="label-uppercase mb-2">Presentes</p>
-              <h3 className="font-[var(--font-display)] font-light text-2xl md:text-3xl text-[var(--color-ink)] leading-tight mb-3">
-                Presente especial
-              </h3>
-              <p className="font-[var(--font-display)] italic text-[var(--color-text-soft)] max-w-sm">
-                Para quem prefere presentear com algo mais pessoal, preparamos
-                uma lista com itens que vão fazer parte do nosso lar.
-              </p>
+            <p
+              className="italic-romance text-[var(--color-text-soft)] max-w-sm leading-[1.65]"
+            >
+              Para quem prefere presentear com algo mais pessoal, preparamos
+              uma lista com itens que vão fazer parte do nosso lar.
+            </p>
 
-              <div className="my-7 grid grid-cols-3 gap-3 w-full max-w-xs">
-                {(["mint", "rose", "sky"] as const).map((c) => (
-                  <div
-                    key={c}
-                    className="aspect-square rounded-2xl flex items-center justify-center"
-                    style={{
-                      background: `var(--color-pastel-${c})`,
-                    }}
-                  >
-                    <Gift
-                      size={26}
-                      strokeWidth={1.4}
-                      className="text-[var(--color-champagne-darker)]/70"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <Link href="/presentes" className="btn-cta mt-auto">
-                Acessar lista de presentes
-              </Link>
+            <div className="my-8 grid grid-cols-3 gap-2 w-full max-w-xs">
+              {[
+                { tone: "var(--color-champagne-darker)", op: 0.92 },
+                { tone: "var(--color-champagne-deep)", op: 0.85 },
+                { tone: "var(--color-champagne)", op: 0.75 },
+              ].map((c, i) => (
+                <div
+                  key={i}
+                  className="aspect-square flex items-center justify-center transition-transform hover:scale-[1.04]"
+                  style={{
+                    background: c.tone,
+                    opacity: c.op,
+                    borderRadius: "2px",
+                  }}
+                >
+                  <Gift
+                    size={26}
+                    strokeWidth={1.2}
+                    className="text-[var(--color-cream)]"
+                  />
+                </div>
+              ))}
             </div>
+
+            <Link href="/presentes" className="btn-cta mt-auto">
+              Acessar lista
+              <span aria-hidden>→</span>
+            </Link>
           </motion.article>
         </div>
       </div>

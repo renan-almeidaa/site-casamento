@@ -4,12 +4,12 @@ import { motion } from "framer-motion";
 import { Calendar, Clock, MapPin, Shirt } from "lucide-react";
 import { WEDDING } from "@/lib/wedding-data";
 import { SectionHeader } from "./SectionHeader";
-import { HorizontalDivider } from "@/components/ui/ornament";
 
 const cards = [
   {
     icon: Calendar,
     eyebrow: "Cerimônia",
+    number: "I",
     title: WEDDING.ceremony.name,
     rows: [
       { label: "Data", value: WEDDING.dateLabel },
@@ -17,25 +17,24 @@ const cards = [
       { label: "Endereço", value: WEDDING.ceremony.address },
     ],
     cta: { label: "Ver no mapa", href: WEDDING.ceremony.mapUrl },
-    pastel: "var(--color-pastel-lavender)",
   },
   {
     icon: MapPin,
     eyebrow: "Recepção",
+    number: "II",
     title: WEDDING.reception.name,
     rows: [
       { label: "Quando", value: WEDDING.reception.timeLabel },
       { label: "Onde", value: WEDDING.reception.address },
     ],
     cta: { label: "Ver no mapa", href: WEDDING.reception.mapUrl },
-    pastel: "var(--color-pastel-mint)",
   },
   {
     icon: Shirt,
     eyebrow: "Traje",
+    number: "III",
     title: WEDDING.dressCode.label,
     rows: [{ label: "Sugestão", value: WEDDING.dressCode.note }],
-    pastel: "var(--color-pastel-rose)",
   },
 ];
 
@@ -43,75 +42,116 @@ export function OGrandeDia() {
   return (
     <section
       id="o-grande-dia"
-      className="relative py-20 md:py-32 px-5 bg-[var(--color-cream-soft)]"
+      className="relative py-24 md:py-36 px-5 overflow-hidden"
+      style={{
+        background:
+          "linear-gradient(180deg, var(--color-cream) 0%, var(--color-cream-soft) 50%, var(--color-cream) 100%)",
+      }}
     >
-      <div className="max-w-6xl mx-auto">
+      {/* Faixa horizontal champagne sutil, decorativa */}
+      <div
+        aria-hidden
+        className="absolute top-0 left-0 right-0 h-px opacity-30"
+        style={{ background: "var(--color-champagne-deep)" }}
+      />
+      <div
+        aria-hidden
+        className="absolute bottom-0 left-0 right-0 h-px opacity-30"
+        style={{ background: "var(--color-champagne-deep)" }}
+      />
+
+      <div className="relative max-w-6xl mx-auto">
         <SectionHeader
           eyebrow="Save the date"
           title="O Grande Dia"
           subtitle="Tudo o que você precisa saber para celebrar com a gente."
         />
 
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
+        <div className="mt-20 md:mt-24 grid gap-7 md:grid-cols-3">
           {cards.map((c, i) => {
             const Icon = c.icon;
             return (
               <motion.article
                 key={c.eyebrow}
-                initial={{ opacity: 0, y: 18 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.6, delay: i * 0.08 }}
-                className="card-soft p-7 md:p-8 flex flex-col relative overflow-hidden"
+                transition={{
+                  duration: 0.7,
+                  delay: i * 0.1,
+                  ease: [0.2, 0.8, 0.2, 1],
+                }}
+                className="card-envelope p-8 md:p-9 flex flex-col relative group"
               >
-                <div
-                  className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-50 blur-2xl"
-                  style={{ background: c.pastel }}
+                {/* Número romano em escala grande no canto superior direito */}
+                <span
                   aria-hidden
-                />
-                <div className="relative">
-                  <div className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-[var(--color-cream)] border border-[var(--color-border-soft)] text-[var(--color-champagne-deep)] mb-4">
-                    <Icon size={20} strokeWidth={1.5} />
-                  </div>
-                  <p className="label-uppercase mb-2">{c.eyebrow}</p>
-                  <h3 className="font-[var(--font-display)] font-light text-2xl md:text-3xl text-[var(--color-ink)] leading-tight">
-                    {c.title}
-                  </h3>
-                  <HorizontalDivider className="my-4 mx-0" />
-                  <ul className="space-y-3">
-                    {c.rows.map((r) => (
-                      <li key={r.label}>
-                        <p className="label-uppercase text-[10px] mb-0.5">
-                          {r.label}
-                        </p>
-                        <p className="text-sm leading-relaxed text-[var(--color-text)]">
-                          {r.label === "Horário" ? (
-                            <span className="inline-flex items-center gap-1.5">
-                              <Clock size={13} className="text-[var(--color-champagne-light)]" />
-                              {r.value}
-                            </span>
-                          ) : (
-                            r.value
-                          )}
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
-                  {c.cta && (
-                    <a
-                      href={c.cta.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-6 inline-flex items-center gap-2 text-xs tracking-[0.25em] uppercase text-[var(--color-champagne-deep)] hover:text-[var(--color-champagne)] transition-colors group"
-                    >
-                      <MapPin size={13} />
-                      <span>{c.cta.label}</span>
-                      <span className="transition-transform group-hover:translate-x-1">
-                        →
-                      </span>
-                    </a>
-                  )}
+                  className="absolute top-5 right-6 font-[var(--font-display)] font-extralight text-[2.5rem] leading-none opacity-15 select-none"
+                  style={{ color: "var(--color-champagne-deep)" }}
+                >
+                  {c.number}
+                </span>
+
+                <div
+                  className="inline-flex items-center justify-center w-10 h-10 mb-5 text-[var(--color-champagne-deep)]"
+                  style={{
+                    border: "1px solid var(--color-champagne-deep)",
+                    borderRadius: "999px",
+                  }}
+                >
+                  <Icon size={17} strokeWidth={1.4} />
                 </div>
+
+                <p className="label-uppercase mb-3">{c.eyebrow}</p>
+                <h3
+                  className="font-[var(--font-display)] font-light text-2xl md:text-[1.75rem] leading-[1.1] tracking-[-0.02em]"
+                  style={{ color: "var(--color-ink)" }}
+                >
+                  {c.title}
+                </h3>
+
+                <div
+                  aria-hidden
+                  className="my-6 h-px w-10"
+                  style={{ background: "var(--color-champagne-deep)" }}
+                />
+
+                <ul className="space-y-4">
+                  {c.rows.map((r) => (
+                    <li key={r.label}>
+                      <p className="label-uppercase-soft mb-1">{r.label}</p>
+                      <p className="text-[15px] leading-relaxed text-[var(--color-text)]">
+                        {r.label === "Horário" ? (
+                          <span className="inline-flex items-center gap-2">
+                            <Clock
+                              size={13}
+                              className="text-[var(--color-champagne-deep)]"
+                            />
+                            {r.value}
+                          </span>
+                        ) : (
+                          r.value
+                        )}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+
+                {c.cta && (
+                  <a
+                    href={c.cta.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-8 inline-flex items-center gap-3 text-[10px] tracking-[0.4em] uppercase font-medium text-[var(--color-champagne-darker)] hover:text-[var(--color-champagne-deep)] transition-colors group/cta self-start"
+                  >
+                    <span>{c.cta.label}</span>
+                    <span
+                      className="inline-block w-6 h-px transition-transform group-hover/cta:w-10"
+                      style={{ background: "currentColor" }}
+                      aria-hidden
+                    />
+                  </a>
+                )}
               </motion.article>
             );
           })}

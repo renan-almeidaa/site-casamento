@@ -50,20 +50,21 @@ export function Countdown({
 
   if (variant === "card") {
     return (
-      <div className="flex justify-center gap-2 sm:gap-4 flex-wrap" suppressHydrationWarning>
+      <div className="flex justify-center gap-2 sm:gap-3 flex-wrap" suppressHydrationWarning>
         {items.map((it) => (
           <div
             key={it.l}
-            className="flex flex-col items-center min-w-[68px] sm:min-w-[88px] rounded-2xl bg-white/70 backdrop-blur px-3 py-3 sm:px-5 sm:py-4 border border-[var(--color-border-soft)]"
+            className="flex flex-col items-center min-w-[72px] sm:min-w-[92px] bg-[var(--color-cream-soft)] backdrop-blur px-4 py-3.5 sm:px-5 sm:py-4 border border-[var(--color-border-soft)]"
+            style={{ borderRadius: "2px" }}
           >
             <span
-              className="font-[var(--font-display)] text-3xl sm:text-4xl font-light leading-none tabular-nums"
+              className="font-[var(--font-display)] text-3xl sm:text-4xl font-extralight leading-none tabular-nums tracking-[-0.04em]"
               style={{ color: "var(--color-ink)" }}
               suppressHydrationWarning
             >
               {mounted ? String(it.v).padStart(2, "0") : "··"}
             </span>
-            <span className="mt-1 text-[10px] tracking-[0.25em] uppercase text-[var(--color-champagne-light)]">
+            <span className="mt-2 text-[9px] tracking-[0.32em] uppercase text-[var(--color-champagne-deep)] font-medium">
               {it.l}
             </span>
           </div>
@@ -74,21 +75,25 @@ export function Countdown({
 
   return (
     <div
-      className="flex items-stretch justify-center gap-3 sm:gap-6"
+      className="flex items-stretch justify-center gap-3 sm:gap-7"
       suppressHydrationWarning
     >
       {items.map((it, i) => (
         <div key={it.l} className="flex items-stretch">
-          <div className="flex flex-col items-center min-w-[58px] sm:min-w-[80px] px-2">
+          <div className="flex flex-col items-center min-w-[60px] sm:min-w-[88px] px-2">
             <span
-              className="font-[var(--font-display)] text-4xl sm:text-6xl font-light leading-none tabular-nums"
-              style={{ color: numberColor }}
+              className="font-[var(--font-display)] text-4xl sm:text-6xl font-extralight leading-none tabular-nums tracking-[-0.04em]"
+              style={{
+                color: numberColor,
+                textShadow:
+                  tone === "light" ? "0 1px 12px rgba(0,0,0,0.25)" : undefined,
+              }}
               suppressHydrationWarning
             >
               {mounted ? String(it.v).padStart(2, "0") : "··"}
             </span>
             <span
-              className="mt-2 sm:mt-3 text-[9px] sm:text-[10px] tracking-[0.35em] uppercase"
+              className="mt-3 sm:mt-4 text-[9px] sm:text-[10px] tracking-[0.42em] uppercase font-medium"
               style={{ color: labelColor }}
             >
               {it.l}
@@ -96,7 +101,7 @@ export function Countdown({
           </div>
           {i < items.length - 1 && (
             <div
-              className="w-px self-stretch mx-1 sm:mx-2"
+              className="w-px self-stretch mx-0 sm:mx-1"
               style={{ background: dividerColor }}
               aria-hidden
             />

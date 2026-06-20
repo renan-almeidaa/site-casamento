@@ -8,10 +8,17 @@ export function NossaHistoria() {
   return (
     <section
       id="nossa-historia"
-      className="relative py-20 md:py-32 px-5 overflow-hidden"
+      className="relative py-24 md:py-36 px-5 overflow-hidden"
     >
-      <div className="pointer-events-none absolute -left-20 top-12 h-72 w-72 rounded-full bg-[var(--color-pastel-rose)] opacity-30 blur-3xl" />
-      <div className="pointer-events-none absolute -right-16 bottom-20 h-64 w-64 rounded-full bg-[var(--color-pastel-salmon)] opacity-25 blur-3xl" />
+      {/* Atmosfera de fundo — radial bem sutil */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-70"
+        style={{
+          background:
+            "radial-gradient(ellipse 50% 60% at 80% 30%, rgba(196,168,130,0.12) 0%, transparent 65%), radial-gradient(ellipse 40% 50% at 20% 80%, rgba(142,101,57,0.08) 0%, transparent 65%)",
+        }}
+      />
 
       <div className="relative max-w-6xl mx-auto">
         <SectionHeader
@@ -20,15 +27,19 @@ export function NossaHistoria() {
           subtitle="Cada encontro foi um sinal, cada riso virou lembrança. Hoje a gente escreve um novo capítulo, juntos, para sempre."
         />
 
-        <div className="mt-14 grid md:grid-cols-2 gap-10 md:gap-14 items-center">
+        <div className="mt-20 md:mt-28 grid md:grid-cols-12 gap-8 md:gap-12 items-center">
+          {/* Foto à esquerda — assimétrica, 5 colunas */}
           <motion.div
-            initial={{ opacity: 0, x: -24 }}
+            initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.7 }}
-            className="relative"
+            transition={{ duration: 0.9, ease: [0.2, 0.8, 0.2, 1] }}
+            className="md:col-span-5 relative"
           >
-            <div className="relative aspect-[4/5] w-full max-w-md mx-auto rounded-2xl overflow-hidden shadow-[0_10px_40px_rgba(100,70,30,0.15)]">
+            <div
+              className="relative aspect-[4/5] w-full max-w-md mx-auto overflow-hidden"
+              style={{ borderRadius: "2px" }}
+            >
               <Image
                 src="/nossa-historia.png"
                 alt="Samara e Renan"
@@ -36,41 +47,80 @@ export function NossaHistoria() {
                 sizes="(max-width: 768px) 100vw, 480px"
                 className="object-cover"
               />
+              {/* Vinheta lateral pra dar profundidade */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    "linear-gradient(180deg, transparent 60%, rgba(42,24,16,0.18) 100%)",
+                }}
+              />
             </div>
-            <div className="absolute -bottom-4 -right-4 hidden md:block w-32 h-32 rounded-full bg-[var(--color-pastel-lavender)] opacity-40 -z-10" />
-            <div className="absolute -top-4 -left-4 hidden md:block w-24 h-24 rounded-full bg-[var(--color-pastel-mint)] opacity-40 -z-10" />
+
+            {/* "Selo" no canto inferior — pequena marca editorial */}
+            <div
+              className="hidden md:flex absolute -bottom-5 -right-5 flex-col items-center justify-center w-24 h-24 bg-[var(--color-champagne-darker)] text-[var(--color-cream)]"
+              style={{ borderRadius: "2px" }}
+              aria-hidden
+            >
+              <span className="text-[8px] tracking-[0.4em] uppercase opacity-70 mb-1">
+                Capítulo
+              </span>
+              <span className="font-[var(--font-display)] font-extralight text-3xl leading-none">
+                01
+              </span>
+            </div>
           </motion.div>
 
+          {/* Texto à direita — 7 colunas, com letra dropcap-ish */}
           <motion.div
-            initial={{ opacity: 0, x: 24 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.7, delay: 0.1 }}
-            className="card-soft p-8 md:p-10 border-l-4 border-[var(--color-champagne)]"
+            transition={{ duration: 0.9, delay: 0.15 }}
+            className="md:col-span-7 md:pl-6 lg:pl-12 relative"
           >
+            {/* Marca de citação grande, decorativa */}
+            <span
+              aria-hidden
+              className="font-[var(--font-display)] absolute -top-12 -left-2 text-[8rem] leading-none font-extralight opacity-15 select-none"
+              style={{ color: "var(--color-champagne-deep)" }}
+            >
+              “
+            </span>
+
             <p
-              className="font-[var(--font-display)] italic text-lg md:text-xl leading-[1.8]"
-              style={{ color: "var(--color-text)" }}
+              className="italic-romance text-xl md:text-2xl leading-[1.7] relative"
+              style={{ color: "var(--color-ink-soft)" }}
             >
               Foi entre conversas e cafés que o nosso amor cresceu devagar, do
-              jeito que as coisas verdadeiras crescem. A gente descobriu que rir
-              junto é fácil, que sonhar junto é mais bonito e que orar junto é
-              um abraço que não tem distância.
+              jeito que as coisas verdadeiras crescem. A gente descobriu que
+              rir junto é fácil, que sonhar junto é mais bonito e que orar
+              junto é um abraço que não tem distância.
             </p>
+
             <p
-              className="mt-5 font-[var(--font-display)] italic text-lg md:text-xl leading-[1.8]"
+              className="mt-6 italic-romance text-lg md:text-xl leading-[1.7]"
               style={{ color: "var(--color-text)" }}
             >
               Agora chegou a hora de dizer “sim” diante de Deus e de quem a
               gente ama. E queremos que você esteja lá, dividindo esse momento
               que só existe porque vocês foram parte da nossa caminhada.
             </p>
-            <p
-              className="mt-6 font-[var(--font-display)] italic text-base"
-              style={{ color: "var(--color-champagne-deep)" }}
-            >
-              Samara &amp; Renan
-            </p>
+
+            <div className="mt-8 flex items-center gap-4">
+              <div
+                className="h-px w-12"
+                style={{ background: "var(--color-champagne-deep)" }}
+                aria-hidden
+              />
+              <p
+                className="text-[10px] tracking-[0.45em] uppercase font-medium"
+                style={{ color: "var(--color-champagne-deep)" }}
+              >
+                Samara &amp; Renan
+              </p>
+            </div>
           </motion.div>
         </div>
       </div>
