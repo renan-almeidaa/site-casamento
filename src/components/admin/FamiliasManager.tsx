@@ -244,7 +244,6 @@ export function FamiliasManager({ initial }: Props) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-[rgba(46,34,24,0.55)] flex items-center justify-center p-5"
-            onClick={() => !submitting && setOpen(false)}
           >
             <motion.div
               initial={{ y: 20, opacity: 0 }}
