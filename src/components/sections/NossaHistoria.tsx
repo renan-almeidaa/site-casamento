@@ -80,10 +80,11 @@ export function NossaHistoria() {
             transition={{ duration: 0.9, delay: 0.15 }}
             className="md:col-span-7 md:pl-6 lg:pl-12 relative"
           >
-            {/* Marca de citação grande, decorativa */}
+            {/* Marca de citação grande, decorativa — só desktop pra não
+                colidir com a foto quando empilha no mobile. */}
             <span
               aria-hidden
-              className="font-[var(--font-display)] absolute -top-12 -left-2 text-[8rem] leading-none font-extralight opacity-15 select-none"
+              className="hidden md:block font-[var(--font-display)] absolute -top-12 -left-2 text-[8rem] leading-none font-extralight opacity-15 select-none pointer-events-none"
               style={{ color: "var(--color-champagne-deep)" }}
             >
               “
