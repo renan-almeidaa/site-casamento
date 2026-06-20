@@ -202,7 +202,7 @@ export default function PagarPage() {
           {tab === "pix" ? (
             <div className="space-y-4">
               <p className="font-[var(--font-display)] italic text-base opacity-90">
-                Escaneie o QR Code — o valor de {formatBRL(totalValue)} já vem preenchido
+                Escaneie o QR Code. O valor de {formatBRL(totalValue)} já vem preenchido
               </p>
               <div
                 ref={qrWrapperRef}
@@ -261,7 +261,7 @@ export default function PagarPage() {
           ) : (
             <div className="space-y-4">
               <p className="font-[var(--font-display)] italic text-base opacity-90">
-                Pague com cartão pelo Mercado Pago — em até 12x
+                Pague com cartão pelo Mercado Pago, em até 12x
               </p>
               <button
                 type="button"

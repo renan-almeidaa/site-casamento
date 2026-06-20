@@ -146,7 +146,7 @@ export function GiftPurchasesTable({
                       <ul>
                         {p.items.map((it, i) => (
                           <li key={i}>
-                            {it.qtd}× {it.nome} —{" "}
+                            {it.qtd}× {it.nome} ·{" "}
                             <span className="text-[var(--color-champagne-deep)]">
                               {formatBRL(it.valor * it.qtd)}
                             </span>
@@ -158,7 +158,7 @@ export function GiftPurchasesTable({
                       {formatBRL(p.total)}
                     </td>
                     <td className="px-4 py-3 text-xs uppercase tracking-[0.2em] text-[var(--color-text-soft)]">
-                      {p.paymentMethod ?? "—"}
+                      {p.paymentMethod ?? "·"}
                     </td>
                     <td className="px-4 py-3">
                       <button

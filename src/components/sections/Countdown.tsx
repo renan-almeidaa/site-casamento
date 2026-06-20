@@ -61,7 +61,7 @@ export function Countdown({
               style={{ color: "var(--color-ink)" }}
               suppressHydrationWarning
             >
-              {mounted ? String(it.v).padStart(2, "0") : "—"}
+              {mounted ? String(it.v).padStart(2, "0") : "··"}
             </span>
             <span className="mt-1 text-[10px] tracking-[0.25em] uppercase text-[var(--color-champagne-light)]">
               {it.l}
@@ -85,7 +85,7 @@ export function Countdown({
               style={{ color: numberColor }}
               suppressHydrationWarning
             >
-              {mounted ? String(it.v).padStart(2, "0") : "—"}
+              {mounted ? String(it.v).padStart(2, "0") : "··"}
             </span>
             <span
               className="mt-2 sm:mt-3 text-[9px] sm:text-[10px] tracking-[0.35em] uppercase"

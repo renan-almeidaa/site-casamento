@@ -28,7 +28,7 @@ export function PresentesCta() {
         <SectionHeader
           eyebrow="Lista de Presentes"
           title="Sua presença é o maior presente"
-          subtitle="Como vocês já sabem, a fase de preparação para o casamento é desafiadora e requer muito esforço — tanto espiritual quanto material. Quem quiser nos abençoar com algo a mais, pode escolher uma das opções abaixo."
+          subtitle="Como vocês já sabem, a fase de preparação para o casamento é desafiadora e requer muito esforço, tanto espiritual quanto material. Quem quiser nos abençoar com algo a mais, pode escolher uma das opções abaixo."
         />
 
         <div className="mt-12 grid md:grid-cols-2 gap-5 md:gap-7">
@@ -54,7 +54,7 @@ export function PresentesCta() {
                 Contribua via PIX
               </h3>
               <p className="font-[var(--font-display)] italic text-[var(--color-text-soft)] max-w-sm">
-                Casar é um sonho — e também um novo começo. Toda contribuição
+                Casar é um sonho, e também um novo começo. Toda contribuição
                 nos ajuda a construir nosso primeiro lar.
               </p>
 

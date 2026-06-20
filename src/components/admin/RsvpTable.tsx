@@ -197,7 +197,7 @@ export function RsvpTable({
                     </a>
                   </td>
                   <td className="px-4 py-3 text-xs italic text-[var(--color-text-soft)] max-w-[260px]">
-                    {r.comment || "—"}
+                    {r.comment || "·"}
                   </td>
                   <td className="px-4 py-3">
                     <button

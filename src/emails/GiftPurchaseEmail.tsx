@@ -48,7 +48,7 @@ export function GiftPurchaseEmail({
             <Text style={label}>Itens</Text>
             {items.map((it, i) => (
               <Text key={i} style={value}>
-                • {it.qtd}× {it.nome} — {fmt(it.valor * it.qtd)}
+                • {it.qtd}× {it.nome} · {fmt(it.valor * it.qtd)}
               </Text>
             ))}
           </Section>

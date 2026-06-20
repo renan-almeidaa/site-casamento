@@ -17,7 +17,7 @@ export function NossaHistoria() {
         <SectionHeader
           eyebrow="O começo de tudo"
           title="Nossa História"
-          subtitle="Cada encontro foi um sinal, cada riso virou lembrança. Hoje a gente escreve um novo capítulo — juntos, para sempre."
+          subtitle="Cada encontro foi um sinal, cada riso virou lembrança. Hoje a gente escreve um novo capítulo, juntos, para sempre."
         />
 
         <div className="mt-14 grid md:grid-cols-2 gap-10 md:gap-14 items-center">
@@ -52,7 +52,7 @@ export function NossaHistoria() {
               className="font-[var(--font-display)] italic text-lg md:text-xl leading-[1.8]"
               style={{ color: "var(--color-text)" }}
             >
-              Foi entre conversas e cafés que o nosso amor cresceu — devagar, do
+              Foi entre conversas e cafés que o nosso amor cresceu devagar, do
               jeito que as coisas verdadeiras crescem. A gente descobriu que rir
               junto é fácil, que sonhar junto é mais bonito e que orar junto é
               um abraço que não tem distância.
@@ -69,7 +69,7 @@ export function NossaHistoria() {
               className="mt-6 font-[var(--font-display)] italic text-base"
               style={{ color: "var(--color-champagne-deep)" }}
             >
-              — Samara &amp; Renan
+              Samara &amp; Renan
             </p>
           </motion.div>
         </div>

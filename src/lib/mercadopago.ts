@@ -39,7 +39,7 @@ export async function createCheckoutPreference(input: CreatePreferenceInput) {
       items: [
         {
           id: input.purchaseId,
-          title: `Presente de Casamento — Samara & Renan`,
+          title: `Presente de Casamento · Samara & Renan`,
           description,
           quantity: 1,
           unit_price: Math.round(input.total * 100) / 100,

@@ -119,11 +119,11 @@ export async function listRsvps(): Promise<AdminRsvp[]> {
     return responses.map((r) => ({
       id: r.id,
       familyId: r.family_id,
-      familyName: families?.find((f) => f.id === r.family_id)?.name ?? "—",
+      familyName: families?.find((f) => f.id === r.family_id)?.name ?? "·",
       confirmed: r.confirmed,
       attendingNames: r.attending_guest_ids
         .map(
-          (gid: string) => guests?.find((g) => g.id === gid)?.name ?? "—",
+          (gid: string) => guests?.find((g) => g.id === gid)?.name ?? "·",
         )
         .filter(Boolean),
       phone: r.phone,
@@ -139,12 +139,12 @@ export async function listRsvps(): Promise<AdminRsvp[]> {
     .map((r) => {
       const family = store.families.find((f) => f.id === r.family_id);
       const names = r.attending_guest_ids
-        .map((gid) => store.guests.find((g) => g.id === gid)?.name ?? "—")
+        .map((gid) => store.guests.find((g) => g.id === gid)?.name ?? "·")
         .filter(Boolean);
       return {
         id: r.id,
         familyId: r.family_id,
-        familyName: family?.name ?? "—",
+        familyName: family?.name ?? "·",
         confirmed: r.confirmed,
         attendingNames: names,
         phone: r.phone,

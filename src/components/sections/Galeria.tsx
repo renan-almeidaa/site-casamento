@@ -39,7 +39,7 @@ export function Galeria() {
         <SectionHeader
           eyebrow="Memórias nossas"
           title="Galeria"
-          subtitle="Momentos guardados no coração — e em cada foto."
+          subtitle="Momentos guardados no coração, e em cada foto."
         />
 
         <div className="mt-14 grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-5">

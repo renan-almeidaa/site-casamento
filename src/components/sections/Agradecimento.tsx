@@ -35,7 +35,7 @@ export function Agradecimento() {
           style={{ color: "var(--color-text-soft)" }}
         >
           “Cada um de vocês deixa o nosso amor mais bonito. Que Deus continue
-          abençoando essa caminhada — agora a três: Ele, você e o nosso.”
+          abençoando essa caminhada, agora a três: Ele, você e o nosso.”
         </p>
         <p
           className="font-[var(--font-display)] italic text-lg"
