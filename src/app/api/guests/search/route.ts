@@ -38,11 +38,13 @@ export async function GET(request: Request) {
     // o unaccent exigiria migration.
     const { data: allGuests } = await supa
       .from("guests")
-      .select("id, family_id, name, is_child");
+      .select("id, family_id, name, is_child, nicknames");
 
-    const matching = (allGuests ?? []).filter((g) =>
-      fold(g.name).includes(qNorm),
-    );
+    const matching = (allGuests ?? []).filter((g) => {
+      if (fold(g.name).includes(qNorm)) return true;
+      const nicks = (g.nicknames ?? []) as string[];
+      return nicks.some((n) => fold(n).includes(qNorm));
+    });
     if (matching.length === 0) return NextResponse.json({ families: [] });
 
     const familyIds = Array.from(new Set(matching.map((g) => g.family_id))).slice(
@@ -67,7 +69,11 @@ export async function GET(request: Request) {
 
   // Fallback demo
   const store = getDemoStore();
-  const matching = store.guests.filter((g) => fold(g.name).includes(qNorm));
+  const matching = store.guests.filter(
+    (g) =>
+      fold(g.name).includes(qNorm) ||
+      g.nicknames.some((n) => fold(n).includes(qNorm)),
+  );
   const familyIds = Array.from(new Set(matching.map((g) => g.family_id))).slice(
     0,
     6,

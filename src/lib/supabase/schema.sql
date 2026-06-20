@@ -18,10 +18,14 @@ create table if not exists guests (
   family_id uuid not null references families(id) on delete cascade,
   name text not null,
   is_child boolean not null default false,
+  nicknames text[] not null default '{}',
   created_at timestamptz default now()
 );
 create index if not exists guests_family_idx on guests(family_id);
 create index if not exists guests_name_idx on guests using gin (to_tsvector('portuguese', name));
+
+-- Migration para bancos já existentes (idempotente):
+alter table guests add column if not exists nicknames text[] not null default '{}';
 
 -- Respostas RSVP
 create table if not exists rsvp_responses (

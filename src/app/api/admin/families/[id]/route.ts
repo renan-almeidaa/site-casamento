@@ -13,6 +13,10 @@ const updateSchema = z.object({
         id: z.string().min(1).max(64).optional(),
         name: z.string().min(1).max(80),
         isChild: z.boolean(),
+        nicknames: z
+          .array(z.string().min(1).max(60))
+          .max(8)
+          .optional(),
       }),
     )
     .min(1)

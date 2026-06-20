@@ -5,7 +5,12 @@ import { getDemoStore, newId } from "@/lib/demo-store";
 export type AdminFamily = {
   id: string;
   name: string;
-  members: { id: string; name: string; isChild: boolean }[];
+  members: {
+    id: string;
+    name: string;
+    isChild: boolean;
+    nicknames: string[];
+  }[];
   latestResponse: {
     confirmed: boolean;
     attendingGuestIds: string[];
@@ -45,7 +50,7 @@ export async function listFamilies(): Promise<AdminFamily[]> {
       .order("name");
     const { data: guests } = await supa
       .from("guests")
-      .select("id, family_id, name, is_child");
+      .select("id, family_id, name, is_child, nicknames");
     const { data: responses } = await supa
       .from("rsvp_responses")
       .select(
@@ -56,7 +61,12 @@ export async function listFamilies(): Promise<AdminFamily[]> {
     return (families ?? []).map((f) => {
       const ms = (guests ?? [])
         .filter((g) => g.family_id === f.id)
-        .map((g) => ({ id: g.id, name: g.name, isChild: g.is_child }));
+        .map((g) => ({
+          id: g.id,
+          name: g.name,
+          isChild: g.is_child,
+          nicknames: (g.nicknames ?? []) as string[],
+        }));
       const latest = (responses ?? []).find((r) => r.family_id === f.id);
       return {
         id: f.id,
@@ -77,7 +87,12 @@ export async function listFamilies(): Promise<AdminFamily[]> {
   return store.families.map((f) => {
     const members = store.guests
       .filter((g) => g.family_id === f.id)
-      .map((g) => ({ id: g.id, name: g.name, isChild: g.is_child }));
+      .map((g) => ({
+        id: g.id,
+        name: g.name,
+        isChild: g.is_child,
+        nicknames: g.nicknames,
+      }));
     const latest = store.rsvp_responses
       .filter((r) => r.family_id === f.id)
       .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
@@ -192,7 +207,7 @@ export async function listGiftPurchases(): Promise<AdminGiftPurchase[]> {
 
 export type AddFamilyInput = {
   name: string;
-  members: { name: string; isChild: boolean }[];
+  members: { name: string; isChild: boolean; nicknames?: string[] }[];
 };
 
 export async function addFamily(input: AddFamilyInput): Promise<AdminFamily> {
@@ -214,14 +229,16 @@ export async function addFamily(input: AddFamilyInput): Promise<AdminFamily> {
             family_id: family.id,
             name: m.name,
             is_child: m.isChild,
+            nicknames: m.nicknames ?? [],
           })),
         )
-        .select("id, name, is_child");
+        .select("id, name, is_child, nicknames");
       if (gErr) throw new Error(gErr.message);
       members = (insertedGuests ?? []).map((g) => ({
         id: g.id,
         name: g.name,
         isChild: g.is_child,
+        nicknames: (g.nicknames ?? []) as string[],
       }));
     }
     return {
@@ -243,13 +260,15 @@ export async function addFamily(input: AddFamilyInput): Promise<AdminFamily> {
   const members: AdminFamily["members"] = [];
   for (const m of input.members) {
     const memberId = newId();
+    const nicknames = m.nicknames ?? [];
     store.guests.push({
       id: memberId,
       family_id: id,
       name: m.name,
       is_child: m.isChild,
+      nicknames,
     });
-    members.push({ id: memberId, name: m.name, isChild: m.isChild });
+    members.push({ id: memberId, name: m.name, isChild: m.isChild, nicknames });
   }
   return {
     id,
@@ -259,9 +278,16 @@ export async function addFamily(input: AddFamilyInput): Promise<AdminFamily> {
   };
 }
 
+export type UpdateFamilyMember = {
+  id?: string;
+  name: string;
+  isChild: boolean;
+  nicknames?: string[];
+};
+
 export type UpdateFamilyInput = {
   name: string;
-  members: { id?: string; name: string; isChild: boolean }[];
+  members: UpdateFamilyMember[];
 };
 
 export async function updateFamily(
@@ -295,7 +321,7 @@ export async function updateFamily(
     );
     const toDelete = [...existingIds].filter((eid) => !inputIds.has(eid));
     const toUpdate = input.members.filter(
-      (m): m is { id: string; name: string; isChild: boolean } => !!m.id,
+      (m): m is UpdateFamilyMember & { id: string } => !!m.id,
     );
     const toInsert = input.members.filter((m) => !m.id);
 
@@ -309,7 +335,11 @@ export async function updateFamily(
     for (const m of toUpdate) {
       const { error: uErr } = await supa
         .from("guests")
-        .update({ name: m.name, is_child: m.isChild })
+        .update({
+          name: m.name,
+          is_child: m.isChild,
+          nicknames: m.nicknames ?? [],
+        })
         .eq("id", m.id);
       if (uErr) throw new Error(uErr.message);
     }
@@ -319,6 +349,7 @@ export async function updateFamily(
           family_id: id,
           name: m.name,
           is_child: m.isChild,
+          nicknames: m.nicknames ?? [],
         })),
       );
       if (insErr) throw new Error(insErr.message);
@@ -326,7 +357,7 @@ export async function updateFamily(
 
     const { data: finalGuests } = await supa
       .from("guests")
-      .select("id, name, is_child")
+      .select("id, name, is_child, nicknames")
       .eq("family_id", id);
     const { data: latest } = await supa
       .from("rsvp_responses")
@@ -342,6 +373,7 @@ export async function updateFamily(
         id: g.id,
         name: g.name,
         isChild: g.is_child,
+        nicknames: (g.nicknames ?? []) as string[],
       })),
       latestResponse: latest
         ? {
@@ -370,6 +402,7 @@ export async function updateFamily(
       if (g) {
         g.name = m.name;
         g.is_child = m.isChild;
+        g.nicknames = m.nicknames ?? [];
       }
     } else {
       store.guests.push({
@@ -377,12 +410,18 @@ export async function updateFamily(
         family_id: id,
         name: m.name,
         is_child: m.isChild,
+        nicknames: m.nicknames ?? [],
       });
     }
   }
   const finalMembers = store.guests
     .filter((g) => g.family_id === id)
-    .map((g) => ({ id: g.id, name: g.name, isChild: g.is_child }));
+    .map((g) => ({
+      id: g.id,
+      name: g.name,
+      isChild: g.is_child,
+      nicknames: g.nicknames,
+    }));
   const latest = store.rsvp_responses
     .filter((r) => r.family_id === id)
     .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];

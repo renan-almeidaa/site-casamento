@@ -8,6 +8,7 @@ export type DemoGuest = {
   family_id: string;
   name: string;
   is_child: boolean;
+  nicknames: string[];
 };
 
 export type DemoFamily = {
@@ -67,13 +68,13 @@ function seed(): Store {
   return {
     families: [f1, f2],
     guests: [
-      { id: randomUUID(), family_id: f1.id, name: "Adalberto", is_child: false },
-      { id: randomUUID(), family_id: f1.id, name: "Creuza", is_child: false },
-      { id: randomUUID(), family_id: f2.id, name: "Maycon", is_child: false },
-      { id: randomUUID(), family_id: f2.id, name: "Vanessa", is_child: false },
-      { id: randomUUID(), family_id: f2.id, name: "Nicolly", is_child: false },
-      { id: randomUUID(), family_id: f2.id, name: "Pedro", is_child: false },
-      { id: randomUUID(), family_id: f2.id, name: "Samuel", is_child: true },
+      { id: randomUUID(), family_id: f1.id, name: "Adalberto", is_child: false, nicknames: [] },
+      { id: randomUUID(), family_id: f1.id, name: "Creuza", is_child: false, nicknames: [] },
+      { id: randomUUID(), family_id: f2.id, name: "Maycon", is_child: false, nicknames: [] },
+      { id: randomUUID(), family_id: f2.id, name: "Vanessa", is_child: false, nicknames: [] },
+      { id: randomUUID(), family_id: f2.id, name: "Nicolly", is_child: false, nicknames: [] },
+      { id: randomUUID(), family_id: f2.id, name: "Pedro", is_child: false, nicknames: [] },
+      { id: randomUUID(), family_id: f2.id, name: "Samuel", is_child: true, nicknames: [] },
     ],
     rsvp_responses: [],
     gift_purchases: [],

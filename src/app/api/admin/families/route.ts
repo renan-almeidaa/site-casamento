@@ -19,6 +19,10 @@ const schema = z.object({
       z.object({
         name: z.string().min(1).max(80),
         isChild: z.boolean(),
+        nicknames: z
+          .array(z.string().min(1).max(60))
+          .max(8)
+          .optional(),
       }),
     )
     .min(1)

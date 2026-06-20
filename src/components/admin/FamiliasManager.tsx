@@ -17,7 +17,22 @@ import type { AdminFamily } from "@/lib/admin-data";
 
 type Props = { initial: AdminFamily[] };
 
-type MemberDraft = { id?: string; name: string; isChild: boolean };
+type MemberDraft = {
+  id?: string;
+  name: string;
+  isChild: boolean;
+  /**
+   * Apelidos como texto editável (separados por vírgula). Convertemos
+   * para string[] no submit.
+   */
+  nicknamesText: string;
+};
+
+const parseNicknames = (s: string): string[] =>
+  s
+    .split(",")
+    .map((n) => n.trim())
+    .filter((n) => n.length > 0);
 
 export function FamiliasManager({ initial }: Props) {
   const [families, setFamilies] = useState(initial);
@@ -25,7 +40,7 @@ export function FamiliasManager({ initial }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [members, setMembers] = useState<MemberDraft[]>([
-    { name: "", isChild: false },
+    { name: "", isChild: false, nicknamesText: "" },
   ]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +50,7 @@ export function FamiliasManager({ initial }: Props) {
   const reset = () => {
     setEditingId(null);
     setName("");
-    setMembers([{ name: "", isChild: false }]);
+    setMembers([{ name: "", isChild: false, nicknamesText: "" }]);
     setError(null);
   };
 
@@ -53,15 +68,19 @@ export function FamiliasManager({ initial }: Props) {
             id: m.id,
             name: m.name,
             isChild: m.isChild,
+            nicknamesText: m.nicknames.join(", "),
           }))
-        : [{ name: "", isChild: false }],
+        : [{ name: "", isChild: false, nicknamesText: "" }],
     );
     setError(null);
     setOpen(true);
   };
 
   const addRow = () =>
-    setMembers((m) => [...m, { name: "", isChild: false }]);
+    setMembers((m) => [
+      ...m,
+      { name: "", isChild: false, nicknamesText: "" },
+    ]);
   const removeRow = (i: number) =>
     setMembers((m) => (m.length === 1 ? m : m.filter((_, idx) => idx !== i)));
 
@@ -72,7 +91,12 @@ export function FamiliasManager({ initial }: Props) {
       return;
     }
     const cleaned = members
-      .map((m) => ({ id: m.id, name: m.name.trim(), isChild: m.isChild }))
+      .map((m) => ({
+        id: m.id,
+        name: m.name.trim(),
+        isChild: m.isChild,
+        nicknames: parseNicknames(m.nicknamesText),
+      }))
       .filter((m) => m.name.length > 0);
     if (cleaned.length === 0) {
       setError("Adicione pelo menos um integrante.");
@@ -103,7 +127,11 @@ export function FamiliasManager({ initial }: Props) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: name.trim(),
-            members: cleaned.map((m) => ({ name: m.name, isChild: m.isChild })),
+            members: cleaned.map((m) => ({
+              name: m.name,
+              isChild: m.isChild,
+              nicknames: m.nicknames,
+            })),
           }),
         });
         const data = (await r.json().catch(() => ({}))) as {
@@ -186,30 +214,43 @@ export function FamiliasManager({ initial }: Props) {
                   </button>
                 </div>
               </header>
-              <ul className="space-y-1 mb-3 text-sm">
+              <ul className="space-y-1.5 mb-3 text-sm">
                 {f.members.map((m) => {
                   const attending =
                     f.latestResponse?.attendingGuestIds.includes(m.id);
                   const responded = !!f.latestResponse;
                   return (
-                    <li
-                      key={m.id}
-                      className="flex items-center gap-2 text-[var(--color-text)]"
-                    >
-                      {responded ? (
-                        attending && f.latestResponse?.confirmed ? (
-                          <CheckCircle2 size={14} className="text-emerald-700" />
+                    <li key={m.id} className="text-[var(--color-text)]">
+                      <div className="flex items-center gap-2">
+                        {responded ? (
+                          attending && f.latestResponse?.confirmed ? (
+                            <CheckCircle2
+                              size={14}
+                              className="text-emerald-700 shrink-0"
+                            />
+                          ) : (
+                            <XCircle
+                              size={14}
+                              className="text-red-700 shrink-0"
+                            />
+                          )
                         ) : (
-                          <XCircle size={14} className="text-red-700" />
-                        )
-                      ) : (
-                        <Clock size={14} className="text-[var(--color-champagne-light)]" />
-                      )}
-                      <span>{m.name}</span>
-                      {m.isChild && (
-                        <span className="ml-auto text-[10px] tracking-[0.2em] uppercase text-[var(--color-champagne-light)]">
-                          criança
-                        </span>
+                          <Clock
+                            size={14}
+                            className="text-[var(--color-champagne-light)] shrink-0"
+                          />
+                        )}
+                        <span>{m.name}</span>
+                        {m.isChild && (
+                          <span className="ml-auto text-[10px] tracking-[0.2em] uppercase text-[var(--color-champagne-light)]">
+                            criança
+                          </span>
+                        )}
+                      </div>
+                      {m.nicknames.length > 0 && (
+                        <p className="ml-6 text-[11px] italic text-[var(--color-text-soft)]">
+                          também: {m.nicknames.join(", ")}
+                        </p>
                       )}
                     </li>
                   );
@@ -284,48 +325,68 @@ export function FamiliasManager({ initial }: Props) {
                   <label className="label-uppercase block mb-1.5">
                     Integrantes
                   </label>
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     {members.map((m, i) => (
-                      <div key={i} className="flex items-center gap-2">
+                      <div
+                        key={i}
+                        className="rounded-lg border border-[var(--color-border-soft)] bg-white/40 p-2.5 space-y-1.5"
+                      >
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={m.name}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              setMembers((cur) =>
+                                cur.map((x, idx) =>
+                                  idx === i ? { ...x, name: v } : x,
+                                ),
+                              );
+                            }}
+                            placeholder={`Integrante ${i + 1}`}
+                            className="input-soft flex-1"
+                          />
+                          <label className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] text-[var(--color-text-soft)] cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={m.isChild}
+                              onChange={(e) => {
+                                const v = e.target.checked;
+                                setMembers((cur) =>
+                                  cur.map((x, idx) =>
+                                    idx === i ? { ...x, isChild: v } : x,
+                                  ),
+                                );
+                              }}
+                            />
+                            criança
+                          </label>
+                          {members.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeRow(i)}
+                              className="p-1.5 text-[var(--color-text-soft)] hover:text-red-700"
+                              aria-label="Remover linha"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          )}
+                        </div>
                         <input
                           type="text"
-                          value={m.name}
+                          value={m.nicknamesText}
                           onChange={(e) => {
                             const v = e.target.value;
                             setMembers((cur) =>
                               cur.map((x, idx) =>
-                                idx === i ? { ...x, name: v } : x,
+                                idx === i ? { ...x, nicknamesText: v } : x,
                               ),
                             );
                           }}
-                          placeholder={`Integrante ${i + 1}`}
-                          className="input-soft flex-1"
+                          placeholder="Apelidos (opcional, separe por vírgula)"
+                          className="input-soft text-xs"
+                          style={{ fontSize: "12px", padding: "8px 12px" }}
                         />
-                        <label className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] text-[var(--color-text-soft)] cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={m.isChild}
-                            onChange={(e) => {
-                              const v = e.target.checked;
-                              setMembers((cur) =>
-                                cur.map((x, idx) =>
-                                  idx === i ? { ...x, isChild: v } : x,
-                                ),
-                              );
-                            }}
-                          />
-                          criança
-                        </label>
-                        {members.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeRow(i)}
-                            className="p-1.5 text-[var(--color-text-soft)] hover:text-red-700"
-                            aria-label="Remover linha"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        )}
                       </div>
                     ))}
                     <button
