@@ -22,7 +22,7 @@ export function Agradecimento() {
           }}
         >
           <Image
-            src="/fotos-do-casal/foto-3.png"
+            src="/fotos-do-casal/gratidao.jpg"
             alt="Samara e Renan"
             fill
             sizes="(max-width: 1024px) 100vw, 768px"

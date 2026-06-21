@@ -55,10 +55,14 @@ export const SECTIONS = [
   { id: "presentes", label: "Presentes" },
 ] as const;
 
-export const GALLERY_PHOTOS = [
-  { src: "/fotos-do-casal/foto-1.png", alt: "Samara e Renan" },
-  { src: "/fotos-do-casal/foto-2.png", alt: "Samara e Renan" },
-  { src: "/fotos-do-casal/foto-3.png", alt: "Samara e Renan" },
-  { src: "/fotos-do-casal/foto-4.png", alt: "Samara e Renan" },
-  { src: "/fotos-do-casal/foto-5.png", alt: "Samara e Renan" },
-];
+// Fotos da galeria — todas dentro de /fotos-do-casal/galeria/.
+// A primeira é o destaque (renderizada em 2x2 no grid desktop).
+// Pra reordenar, basta trocar a ordem dos números aqui ou renomear
+// os arquivos (gal-01.jpg = primeira posição, etc).
+export const GALLERY_PHOTOS = Array.from({ length: 22 }, (_, i) => {
+  const n = String(i + 1).padStart(2, "0");
+  return {
+    src: `/fotos-do-casal/galeria/gal-${n}.jpg`,
+    alt: "Samara e Renan",
+  };
+});
