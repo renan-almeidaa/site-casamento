@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Copy, ExternalLink, Mail, CreditCard } from "lucide-react";
+import { ChevronDown, Copy, ExternalLink, Mail, CreditCard } from "lucide-react";
 import { WEDDING } from "@/lib/wedding-data";
 import { useToast } from "@/components/ui/toaster";
 import { Ornament, HorizontalDivider } from "@/components/ui/ornament";
@@ -14,8 +14,14 @@ export function PixHero() {
     toast(msg);
   };
 
+  const scrollToList = () => {
+    if (typeof window === "undefined") return;
+    const el = document.getElementById("lista-presentes");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
-    <section className="relative pt-28 pb-12 px-5 bg-[var(--color-champagne-darker)] text-[var(--color-cream)] overflow-hidden">
+    <section className="relative pt-20 md:pt-24 pb-10 px-5 bg-[var(--color-champagne-darker)] text-[var(--color-cream)] overflow-hidden">
       <div className="pointer-events-none absolute inset-0 opacity-30 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(196,168,130,0.4)_0%,_transparent_60%),_radial-gradient(ellipse_at_70%_80%,_rgba(160,120,80,0.4)_0%,_transparent_60%)]" />
 
       <div className="relative max-w-3xl mx-auto text-center">
@@ -87,6 +93,25 @@ export function PixHero() {
               <ExternalLink size={11} />
             </a>
           </div>
+        </div>
+
+        {/* Affordance pra próxima seção — evita que o convidado pare no PIX
+            pensando que é tudo. */}
+        <div className="mt-10 flex flex-col items-center gap-2">
+          <p className="text-[10px] tracking-[0.4em] uppercase text-[var(--color-champagne)]/80">
+            ou escolha um presente da lista
+          </p>
+          <button
+            type="button"
+            onClick={scrollToList}
+            className="group inline-flex items-center justify-center w-10 h-10 rounded-full border border-[var(--color-champagne)]/40 text-[var(--color-champagne)] hover:bg-[var(--color-champagne)] hover:text-[var(--color-champagne-darker)] transition-colors"
+            aria-label="Rolar até a lista de presentes"
+          >
+            <ChevronDown
+              size={18}
+              className="animate-bounce-slow group-hover:animate-none"
+            />
+          </button>
         </div>
       </div>
     </section>

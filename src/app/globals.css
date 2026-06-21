@@ -306,6 +306,14 @@
   .stagger-5 { animation-delay: 1.1s; }
   .stagger-6 { animation-delay: 1.4s; }
 
+  @keyframes bounce-slow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(3px); }
+  }
+  .animate-bounce-slow {
+    animation: bounce-slow 1.8s ease-in-out infinite;
+  }
+
   /* Numerais tabulares — Fraunces e Bricolage suportam */
   .tnum {
     font-variant-numeric: tabular-nums;

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PRESENTES, CATEGORIAS } from "@/data/presentes";
 import { GiftCard } from "@/components/presentes/GiftCard";
@@ -30,14 +30,37 @@ export default function PresentesPage() {
 
       <PixHero />
 
-      <section className="relative py-16 md:py-24 px-5">
+      <section
+        id="lista-presentes"
+        className="relative pt-10 md:pt-14 pb-16 md:pb-24 px-5 scroll-mt-4"
+      >
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-10">
+          <div className="text-center mb-8">
             <Ornament className="mb-4" />
             <p className="label-uppercase mb-2">Ou escolha um presente</p>
             <h2 className="heading-display text-3xl md:text-4xl">
               Para o nosso novo lar
             </h2>
+          </div>
+
+          <div className="max-w-2xl mx-auto mb-10 bg-[var(--color-cream-soft)] border border-[var(--color-border-soft)] rounded-2xl px-5 py-4 sm:px-6 sm:py-5 flex items-start gap-3.5">
+            <Heart
+              size={17}
+              strokeWidth={1.6}
+              className="text-[var(--color-champagne-deep)] mt-0.5 shrink-0"
+            />
+            <p className="text-sm sm:text-[15px] leading-relaxed text-[var(--color-text)]">
+              <span className="font-medium text-[var(--color-ink)]">
+                Pra deixar tudo claro:
+              </span>{" "}
+              você não precisa comprar e mandar o item pra gente. Ao escolher
+              um presente, você está contribuindo com o valor dele pra a gente
+              montar nosso primeiro lar do nosso jeitinho. Cada presente que
+              você escolher vira parte da nossa nova vida.{" "}
+              <span className="italic-romance text-[var(--color-champagne-deep)]">
+                Obrigado de coração!
+              </span>
+            </p>
           </div>
 
           <div className="flex justify-center flex-wrap gap-2 mb-10">

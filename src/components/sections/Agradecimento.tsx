@@ -15,7 +15,7 @@ export function Agradecimento() {
         className="relative max-w-3xl mx-auto text-center"
       >
         <div
-          className="relative aspect-[16/10] w-full overflow-hidden mb-12"
+          className="relative aspect-[3/4] sm:aspect-[4/5] w-full overflow-hidden mb-12"
           style={{
             borderRadius: "2px",
             boxShadow: "0 24px 60px -28px rgba(42,24,16,0.35)",
@@ -26,7 +26,7 @@ export function Agradecimento() {
             alt="Samara e Renan"
             fill
             sizes="(max-width: 1024px) 100vw, 768px"
-            className="object-cover"
+            className="object-cover object-bottom"
           />
           <div
             className="absolute inset-0"
