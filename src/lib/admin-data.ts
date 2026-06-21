@@ -24,6 +24,7 @@ export type AdminRsvp = {
   familyName: string;
   confirmed: boolean;
   attendingNames: string[];
+  notAttendingNames: string[];
   phone: string;
   email: string;
   comment: string | null;
@@ -122,30 +123,40 @@ export async function listRsvps(): Promise<AdminRsvp[]> {
       .order("created_at", { ascending: false });
     if (!responses?.length) return [];
     const familyIds = Array.from(new Set(responses.map((r) => r.family_id)));
-    const guestIds = responses.flatMap((r) => r.attending_guest_ids);
     const { data: families } = await supa
       .from("families")
       .select("id, name")
       .in("id", familyIds);
+    // Trazemos TODOS os integrantes das famílias envolvidas para conseguir
+    // mostrar tanto quem confirmou quanto quem ficou de fora.
     const { data: guests } = await supa
       .from("guests")
-      .select("id, name")
-      .in("id", guestIds);
-    return responses.map((r) => ({
-      id: r.id,
-      familyId: r.family_id,
-      familyName: families?.find((f) => f.id === r.family_id)?.name ?? "·",
-      confirmed: r.confirmed,
-      attendingNames: r.attending_guest_ids
-        .map(
-          (gid: string) => guests?.find((g) => g.id === gid)?.name ?? "·",
-        )
-        .filter(Boolean),
-      phone: r.phone,
-      email: r.email,
-      comment: r.comment,
-      createdAt: r.created_at,
-    }));
+      .select("id, family_id, name")
+      .in("family_id", familyIds);
+    return responses.map((r) => {
+      const familyGuests = (guests ?? []).filter(
+        (g) => g.family_id === r.family_id,
+      );
+      const attendingIds = new Set(r.attending_guest_ids as string[]);
+      const attendingNames = familyGuests
+        .filter((g) => attendingIds.has(g.id))
+        .map((g) => g.name);
+      const notAttendingNames = familyGuests
+        .filter((g) => !attendingIds.has(g.id))
+        .map((g) => g.name);
+      return {
+        id: r.id,
+        familyId: r.family_id,
+        familyName: families?.find((f) => f.id === r.family_id)?.name ?? "·",
+        confirmed: r.confirmed,
+        attendingNames,
+        notAttendingNames,
+        phone: r.phone,
+        email: r.email,
+        comment: r.comment,
+        createdAt: r.created_at,
+      };
+    });
   }
 
   const store = getDemoStore();
@@ -153,15 +164,23 @@ export async function listRsvps(): Promise<AdminRsvp[]> {
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
     .map((r) => {
       const family = store.families.find((f) => f.id === r.family_id);
-      const names = r.attending_guest_ids
-        .map((gid) => store.guests.find((g) => g.id === gid)?.name ?? "·")
-        .filter(Boolean);
+      const familyGuests = store.guests.filter(
+        (g) => g.family_id === r.family_id,
+      );
+      const attendingIds = new Set(r.attending_guest_ids);
+      const attendingNames = familyGuests
+        .filter((g) => attendingIds.has(g.id))
+        .map((g) => g.name);
+      const notAttendingNames = familyGuests
+        .filter((g) => !attendingIds.has(g.id))
+        .map((g) => g.name);
       return {
         id: r.id,
         familyId: r.family_id,
         familyName: family?.name ?? "·",
         confirmed: r.confirmed,
-        attendingNames: names,
+        attendingNames,
+        notAttendingNames,
         phone: r.phone,
         email: r.email,
         comment: r.comment,
