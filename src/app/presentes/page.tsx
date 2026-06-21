@@ -8,7 +8,6 @@ import { PRESENTES, CATEGORIAS } from "@/data/presentes";
 import { GiftCard } from "@/components/presentes/GiftCard";
 import { CartDrawer } from "@/components/presentes/CartDrawer";
 import { CartFab } from "@/components/presentes/CartFab";
-import { PixHero } from "@/components/presentes/PixHero";
 import { Ornament } from "@/components/ui/ornament";
 import { Footer } from "@/components/layout/Footer";
 
@@ -28,11 +27,9 @@ export default function PresentesPage() {
         <ArrowLeft size={13} /> Início
       </Link>
 
-      <PixHero />
-
       <section
         id="lista-presentes"
-        className="relative pt-10 md:pt-14 pb-16 md:pb-24 px-5 scroll-mt-4"
+        className="relative pt-24 md:pt-32 pb-16 md:pb-24 px-5"
       >
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
