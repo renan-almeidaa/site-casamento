@@ -20,8 +20,10 @@ type RsvpModalProps = {
   onClose: () => void;
 };
 
+type Step = "form" | "confirm" | "submitting" | "success";
+
 export function RsvpModal({ open, onClose }: RsvpModalProps) {
-  const [step, setStep] = useState<"form" | "submitting" | "success">("form");
+  const [step, setStep] = useState<Step>("form");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GuestSearchFamily[]>([]);
   const [showResults, setShowResults] = useState(false);
@@ -108,7 +110,11 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
     });
   };
 
-  const submit = async () => {
+  const notAttendingMembers = family
+    ? family.members.filter((m) => !selected.has(m.id))
+    : [];
+
+  const handleSubmitClick = () => {
     setError(null);
     if (!family) {
       setError("Pesquise e selecione seu nome na lista.");
@@ -118,15 +124,17 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
       setError("Telefone e e-mail são obrigatórios.");
       return;
     }
-
-    const willAttend = selected.size > 0;
-    if (!willAttend) {
-      const ok = window.confirm(
-        "Você não marcou ninguém. Isso será registrado como: ninguém da família vai ao casamento. Tem certeza?",
-      );
-      if (!ok) return;
+    // Se há algum membro desmarcado, força double-check antes de enviar.
+    if (notAttendingMembers.length > 0) {
+      setStep("confirm");
+      return;
     }
+    void doSubmit();
+  };
 
+  const doSubmit = async () => {
+    if (!family) return;
+    const willAttend = selected.size > 0;
     setStep("submitting");
     try {
       const r = await fetch("/api/rsvp", {
@@ -185,6 +193,12 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
                 isConfirmed={submittedAsConfirmed}
                 onClose={onClose}
               />
+            ) : step === "confirm" ? (
+              <ConfirmPanel
+                notAttendingNames={notAttendingMembers.map((m) => m.name)}
+                onBack={() => setStep("form")}
+                onConfirm={doSubmit}
+              />
             ) : (
               <div className="p-6 sm:p-8">
                 <header className="text-center mb-5">
@@ -201,31 +215,6 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
                     {WEDDING.dateShort} · {WEDDING.timeLabel}
                   </p>
                 </header>
-
-                {/* Instruções + aviso, sempre visíveis */}
-                <div className="space-y-2.5 mb-4">
-                  <div className="flex items-start gap-2.5 text-sm leading-relaxed text-[var(--color-text)] bg-[var(--color-cream-soft)] border border-[var(--color-border-soft)] rounded-xl px-4 py-3">
-                    <Info
-                      size={16}
-                      className="text-[var(--color-champagne-deep)] mt-0.5 shrink-0"
-                    />
-                    <p>
-                      Pesquise sua família e <strong>marque quem irá</strong>.
-                      Quem não for marcado entra como ausente.
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-2.5 text-xs leading-relaxed text-[var(--color-text-soft)] bg-[rgba(196,168,130,0.10)] border border-[rgba(196,168,130,0.35)] rounded-xl px-4 py-3">
-                    <AlertTriangle
-                      size={14}
-                      className="text-[var(--color-champagne-deep)] mt-0.5 shrink-0"
-                    />
-                    <p>
-                      A resposta <strong>não pode ser alterada</strong> depois de
-                      enviada. Em caso de mudança, fale direto com Renan ou
-                      Samara.
-                    </p>
-                  </div>
-                </div>
 
                 <div className="space-y-4">
                   <div className="card-soft p-5">
@@ -270,52 +259,79 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
                     </div>
 
                     {family && (
-                      <div className="mt-4">
-                        <p className="label-uppercase mb-2">
-                          Marque quem irá ao casamento
-                        </p>
-                        <div className="flex flex-col gap-2">
-                          {family.members.map((m) => {
-                            const isSel = selected.has(m.id);
-                            return (
-                              <button
-                                type="button"
-                                key={m.id}
-                                onClick={() => toggleMember(m.id)}
-                                className={`flex items-center gap-3 p-2.5 rounded-xl border-[1.5px] transition-all text-left ${
-                                  isSel
-                                    ? "border-[var(--color-champagne-light)] bg-[var(--color-cream-soft)]"
-                                    : "border-[var(--color-border-soft)] bg-[var(--color-cream-soft)]"
-                                }`}
-                              >
-                                <div
-                                  className={`w-5 h-5 rounded-md border-[1.5px] flex items-center justify-center flex-shrink-0 ${
+                      <>
+                        {/* Instruções aparecem assim que uma família é selecionada */}
+                        <div className="mt-4 space-y-2.5">
+                          <div className="flex items-start gap-2.5 text-sm leading-relaxed text-[var(--color-text)] bg-[var(--color-cream-soft)] border border-[var(--color-border-soft)] rounded-xl px-4 py-3">
+                            <Info
+                              size={16}
+                              className="text-[var(--color-champagne-deep)] mt-0.5 shrink-0"
+                            />
+                            <p>
+                              <strong>Marque quem irá</strong> ao casamento.
+                              Quem não for marcado entra como ausente.
+                            </p>
+                          </div>
+                          <div className="flex items-start gap-2.5 text-xs leading-relaxed text-[var(--color-text-soft)] bg-[rgba(196,168,130,0.10)] border border-[rgba(196,168,130,0.35)] rounded-xl px-4 py-3">
+                            <AlertTriangle
+                              size={14}
+                              className="text-[var(--color-champagne-deep)] mt-0.5 shrink-0"
+                            />
+                            <p>
+                              A resposta <strong>não pode ser alterada</strong>{" "}
+                              depois de enviada. Em caso de mudança, fale direto
+                              com Renan ou Samara.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="mt-4">
+                          <p className="label-uppercase mb-2">
+                            Marque quem irá ao casamento
+                          </p>
+                          <div className="flex flex-col gap-2">
+                            {family.members.map((m) => {
+                              const isSel = selected.has(m.id);
+                              return (
+                                <button
+                                  type="button"
+                                  key={m.id}
+                                  onClick={() => toggleMember(m.id)}
+                                  className={`flex items-center gap-3 p-2.5 rounded-xl border-[1.5px] transition-all text-left ${
                                     isSel
-                                      ? "bg-[var(--color-champagne-light)] border-[var(--color-champagne-light)]"
-                                      : "border-[#d4c0a8]"
+                                      ? "border-[var(--color-champagne-light)] bg-[var(--color-cream-soft)]"
+                                      : "border-[var(--color-border-soft)] bg-[var(--color-cream-soft)]"
                                   }`}
                                 >
-                                  {isSel && (
-                                    <Check
-                                      size={12}
-                                      strokeWidth={3}
-                                      className="text-white"
-                                    />
-                                  )}
-                                </div>
-                                <span className="text-sm text-[var(--color-text)]">
-                                  {m.name}
-                                </span>
-                                {m.isChild && (
-                                  <span className="ml-auto text-[10px] tracking-[0.2em] uppercase text-[var(--color-champagne-light)]">
-                                    Criança
+                                  <div
+                                    className={`w-5 h-5 rounded-md border-[1.5px] flex items-center justify-center flex-shrink-0 ${
+                                      isSel
+                                        ? "bg-[var(--color-champagne-light)] border-[var(--color-champagne-light)]"
+                                        : "border-[#d4c0a8]"
+                                    }`}
+                                  >
+                                    {isSel && (
+                                      <Check
+                                        size={12}
+                                        strokeWidth={3}
+                                        className="text-white"
+                                      />
+                                    )}
+                                  </div>
+                                  <span className="text-sm text-[var(--color-text)]">
+                                    {m.name}
                                   </span>
-                                )}
-                              </button>
-                            );
-                          })}
+                                  {m.isChild && (
+                                    <span className="ml-auto text-[10px] tracking-[0.2em] uppercase text-[var(--color-champagne-light)]">
+                                      Criança
+                                    </span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
+                      </>
                     )}
                   </div>
 
@@ -372,17 +388,10 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
                     <button
                       type="button"
                       disabled={step === "submitting"}
-                      onClick={submit}
+                      onClick={handleSubmitClick}
                       className="btn-cta"
                     >
-                      {step === "submitting" ? (
-                        <>
-                          <Loader2 size={16} className="animate-spin" />
-                          Enviando...
-                        </>
-                      ) : (
-                        "Enviar Resposta"
-                      )}
+                      Enviar Resposta
                     </button>
                   </div>
                 </div>
@@ -392,6 +401,95 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+function ConfirmPanel({
+  notAttendingNames,
+  onBack,
+  onConfirm,
+}: {
+  notAttendingNames: string[];
+  onBack: () => void;
+  onConfirm: () => void;
+}) {
+  const [confirming, setConfirming] = useState(false);
+  const handleConfirm = async () => {
+    setConfirming(true);
+    try {
+      await onConfirm();
+    } finally {
+      setConfirming(false);
+    }
+  };
+  const isPlural = notAttendingNames.length > 1;
+  return (
+    <div className="p-6 sm:p-8">
+      <header className="text-center mb-6">
+        <Ornament className="mb-3" />
+        <p className="label-uppercase">Verificação final</p>
+        <h2 className="heading-display text-3xl mt-2">
+          Confirmar resposta
+        </h2>
+      </header>
+
+      <div className="card-soft p-5 mb-3">
+        <p className="text-sm font-medium text-[var(--color-ink)] mb-3 leading-relaxed">
+          {isPlural
+            ? "As pessoas abaixo serão registradas como ausentes:"
+            : "A pessoa abaixo será registrada como ausente:"}
+        </p>
+        <ul className="space-y-1.5">
+          {notAttendingNames.map((name) => (
+            <li
+              key={name}
+              className="flex items-center gap-2 text-sm text-[var(--color-text)]"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-champagne-deep)] shrink-0" />
+              <span>{name}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="flex items-start gap-2.5 text-xs leading-relaxed text-[var(--color-text-soft)] bg-[rgba(196,168,130,0.10)] border border-[rgba(196,168,130,0.35)] rounded-xl px-4 py-3 mb-6">
+        <AlertTriangle
+          size={14}
+          className="text-[var(--color-champagne-deep)] mt-0.5 shrink-0"
+        />
+        <p>
+          Após confirmar, esta resposta <strong>não poderá ser alterada</strong>{" "}
+          pelo site. Se houver mudança, entre em contato direto com Renan ou
+          Samara.
+        </p>
+      </div>
+
+      <div className="flex flex-col-reverse sm:flex-row gap-2.5">
+        <button
+          type="button"
+          onClick={onBack}
+          disabled={confirming}
+          className="sm:flex-1 rounded-full border border-[var(--color-border-soft)] py-3 px-5 text-[11px] tracking-[0.3em] uppercase text-[var(--color-text-soft)] hover:bg-[var(--color-cream-soft)] disabled:opacity-60"
+        >
+          Voltar e revisar
+        </button>
+        <button
+          type="button"
+          onClick={handleConfirm}
+          disabled={confirming}
+          className="sm:flex-1 btn-cta"
+        >
+          {confirming ? (
+            <>
+              <Loader2 size={14} className="animate-spin" />
+              Enviando...
+            </>
+          ) : (
+            "Confirmar e Enviar"
+          )}
+        </button>
+      </div>
+    </div>
   );
 }
 
