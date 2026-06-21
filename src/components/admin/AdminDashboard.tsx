@@ -31,7 +31,11 @@ type Stats = {
   totalFamilies: number;
   totalGuests: number;
   confirmedGuests: number;
+  notAttendingGuests: number;
+  pendingGuests: number;
   confirmedCount: number;
+  fullyConfirmedCount: number;
+  partialCount: number;
   declinedCount: number;
   pendingCount: number;
   totalArrecadado: number;
@@ -84,12 +88,22 @@ function OverviewTab() {
   if (loading) return <Spinner />;
   if (!stats) return null;
 
+  const confirmadosSub =
+    stats.partialCount > 0
+      ? `${stats.confirmedCount} família(s) · ${stats.partialCount} parcial`
+      : `${stats.confirmedCount} família(s)`;
+
+  const naoVaoSub =
+    stats.declinedCount > 0
+      ? `${stats.declinedCount} família(s) declinou`
+      : "pessoa(s) ausente(s)";
+
   const cards = [
     { label: "Famílias", value: stats.totalFamilies, tone: "var(--color-pastel-lavender)", Icon: UsersIcon },
     { label: "Convidados", value: stats.totalGuests, tone: "var(--color-pastel-sky)", Icon: ClipboardCheck },
-    { label: "Confirmados", value: `${stats.confirmedGuests}`, sub: `${stats.confirmedCount} família(s)`, tone: "var(--color-pastel-mint)", Icon: Heart },
-    { label: "Não vão", value: stats.declinedCount, tone: "var(--color-pastel-rose)", Icon: XCircle },
-    { label: "Pendentes", value: stats.pendingCount, tone: "var(--color-pastel-yellow)", Icon: Clock },
+    { label: "Confirmados", value: `${stats.confirmedGuests}`, sub: confirmadosSub, tone: "var(--color-pastel-mint)", Icon: Heart },
+    { label: "Não vão", value: stats.notAttendingGuests, sub: naoVaoSub, tone: "var(--color-pastel-rose)", Icon: XCircle },
+    { label: "Pendentes", value: stats.pendingCount, sub: `${stats.pendingGuests} pessoa(s)`, tone: "var(--color-pastel-yellow)", Icon: Clock },
     { label: "Arrecadado", value: formatBRL(stats.totalArrecadado), sub: `Aguardando: ${formatBRL(stats.totalPendente)}`, tone: "var(--color-pastel-salmon)", Icon: Gift },
   ];
 

@@ -523,23 +523,54 @@ export async function adminStats() {
   const families = await listFamilies();
   const totalFamilies = families.length;
   const totalGuests = families.reduce((s, f) => s + f.members.length, 0);
-  const confirmedFamilies = families.filter(
-    (f) => f.latestResponse?.confirmed,
-  );
-  const declinedFamilies = families.filter(
-    (f) => f.latestResponse && !f.latestResponse.confirmed,
-  );
+
+  const respondedFamilies = families.filter((f) => f.latestResponse);
   const pendingFamilies = families.filter((f) => !f.latestResponse);
-  const confirmedGuests = confirmedFamilies.reduce(
-    (s, f) => s + (f.latestResponse?.attendingGuestIds.length ?? 0),
+
+  // Contagem em nível de pessoa (não só família) — necessário porque
+  // agora uma família pode ter resposta parcial (alguns vão, outros não).
+  let confirmedGuests = 0;
+  let notAttendingGuests = 0;
+  for (const f of respondedFamilies) {
+    const attendingIds = new Set(f.latestResponse!.attendingGuestIds);
+    for (const m of f.members) {
+      if (attendingIds.has(m.id)) confirmedGuests++;
+      else notAttendingGuests++;
+    }
+  }
+  const pendingGuests = pendingFamilies.reduce(
+    (s, f) => s + f.members.length,
     0,
   );
+
+  // Breakdown em nível de família
+  const fullyConfirmedFamilies = respondedFamilies.filter((f) => {
+    const att = f.latestResponse!.attendingGuestIds;
+    return att.length > 0 && att.length === f.members.length;
+  });
+  const partialFamilies = respondedFamilies.filter((f) => {
+    const att = f.latestResponse!.attendingGuestIds;
+    return att.length > 0 && att.length < f.members.length;
+  });
+  const declinedFamilies = respondedFamilies.filter(
+    (f) => f.latestResponse!.attendingGuestIds.length === 0,
+  );
+
+  // confirmedCount mantém o significado de "famílias com pelo menos
+  // 1 pessoa confirmada" (full + parcial) pra manter compatibilidade.
+  const confirmedCount =
+    fullyConfirmedFamilies.length + partialFamilies.length;
+
   return {
     totalFamilies,
     totalGuests,
-    confirmedCount: confirmedFamilies.length,
+    confirmedGuests,
+    notAttendingGuests,
+    pendingGuests,
+    confirmedCount,
+    fullyConfirmedCount: fullyConfirmedFamilies.length,
+    partialCount: partialFamilies.length,
     declinedCount: declinedFamilies.length,
     pendingCount: pendingFamilies.length,
-    confirmedGuests,
   };
 }
