@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
-import { ChevronDown, ChevronUp, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, X } from "lucide-react";
 import { GALLERY_PHOTOS } from "@/lib/wedding-data";
 import { SectionHeader } from "./SectionHeader";
 
@@ -13,10 +13,14 @@ import { SectionHeader } from "./SectionHeader";
 const INITIAL_COUNT = 6;
 // Mini-thumbs de prévia mostradas acima do botão "ver mais".
 const PREVIEW_COUNT = 4;
+// Threshold de swipe horizontal pra disparar próxima/anterior.
+const SWIPE_THRESHOLD_PX = 60;
+const SWIPE_THRESHOLD_VELOCITY = 400;
 
 export function Galeria() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const [swipeDirection, setSwipeDirection] = useState<1 | -1>(1);
 
   const totalCount = GALLERY_PHOTOS.length;
   const hasMore = totalCount > INITIAL_COUNT;
@@ -28,16 +32,24 @@ export function Galeria() {
     ? GALLERY_PHOTOS.slice(INITIAL_COUNT, INITIAL_COUNT + PREVIEW_COUNT)
     : [];
 
+  const goNext = useCallback(() => {
+    setSwipeDirection(1);
+    setOpenIndex((i) => (i === null ? null : (i + 1) % totalCount));
+  }, [totalCount]);
+
+  const goPrev = useCallback(() => {
+    setSwipeDirection(-1);
+    setOpenIndex((i) =>
+      i === null ? null : (i - 1 + totalCount) % totalCount,
+    );
+  }, [totalCount]);
+
   useEffect(() => {
     if (openIndex === null) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpenIndex(null);
-      if (e.key === "ArrowRight")
-        setOpenIndex((i) => (i === null ? null : (i + 1) % totalCount));
-      if (e.key === "ArrowLeft")
-        setOpenIndex((i) =>
-          i === null ? null : (i - 1 + totalCount) % totalCount,
-        );
+      if (e.key === "ArrowRight") goNext();
+      if (e.key === "ArrowLeft") goPrev();
     };
     window.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
@@ -45,7 +57,7 @@ export function Galeria() {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [openIndex, totalCount]);
+  }, [openIndex, goNext, goPrev]);
 
   return (
     <section id="galeria" className="relative py-20 md:py-32 px-5">
@@ -160,33 +172,90 @@ export function Galeria() {
             className="fixed inset-0 z-[120] bg-[rgba(46,34,24,0.92)] flex items-center justify-center p-5"
             onClick={() => setOpenIndex(null)}
           >
+            {/* Botão fechar */}
             <button
               type="button"
               aria-label="Fechar"
-              onClick={() => setOpenIndex(null)}
-              className="absolute top-5 right-5 text-white/85 hover:text-white p-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenIndex(null);
+              }}
+              className="absolute top-5 right-5 z-10 text-white/85 hover:text-white p-2"
             >
               <X size={26} />
             </button>
-            <p className="absolute top-6 left-6 text-white/60 text-xs tracking-[0.3em] uppercase">
+
+            {/* Contador */}
+            <p className="absolute top-6 left-6 text-white/60 text-xs tracking-[0.3em] uppercase pointer-events-none">
               {openIndex + 1} / {totalCount}
             </p>
-            <motion.div
-              key={GALLERY_PHOTOS[openIndex].src}
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.25 }}
-              className="relative w-full max-w-4xl aspect-[4/3]"
-              onClick={(e) => e.stopPropagation()}
+
+            {/* Seta esquerda */}
+            <button
+              type="button"
+              aria-label="Foto anterior"
+              onClick={(e) => {
+                e.stopPropagation();
+                goPrev();
+              }}
+              className="absolute left-2 sm:left-5 top-1/2 -translate-y-1/2 z-10 inline-flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-black/30 hover:bg-black/60 backdrop-blur text-white/85 hover:text-white transition-colors"
             >
-              <Image
-                src={GALLERY_PHOTOS[openIndex].src}
-                alt={GALLERY_PHOTOS[openIndex].alt}
-                fill
-                className="object-contain"
-                sizes="100vw"
-              />
-            </motion.div>
+              <ChevronLeft size={24} strokeWidth={1.6} />
+            </button>
+
+            {/* Seta direita */}
+            <button
+              type="button"
+              aria-label="Próxima foto"
+              onClick={(e) => {
+                e.stopPropagation();
+                goNext();
+              }}
+              className="absolute right-2 sm:right-5 top-1/2 -translate-y-1/2 z-10 inline-flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-black/30 hover:bg-black/60 backdrop-blur text-white/85 hover:text-white transition-colors"
+            >
+              <ChevronRight size={24} strokeWidth={1.6} />
+            </button>
+
+            {/* Foto com swipe — animação direcional baseada em swipeDirection */}
+            <AnimatePresence custom={swipeDirection} mode="wait">
+              <motion.div
+                key={GALLERY_PHOTOS[openIndex].src}
+                custom={swipeDirection}
+                variants={{
+                  enter: (dir: number) => ({ opacity: 0, x: dir * 60 }),
+                  center: { opacity: 1, x: 0 },
+                  exit: (dir: number) => ({ opacity: 0, x: dir * -60 }),
+                }}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.22, ease: [0.2, 0.7, 0.3, 1] }}
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.18}
+                onDragEnd={(_, info) => {
+                  const swipedRight =
+                    info.offset.x > SWIPE_THRESHOLD_PX ||
+                    info.velocity.x > SWIPE_THRESHOLD_VELOCITY;
+                  const swipedLeft =
+                    info.offset.x < -SWIPE_THRESHOLD_PX ||
+                    info.velocity.x < -SWIPE_THRESHOLD_VELOCITY;
+                  if (swipedRight) goPrev();
+                  else if (swipedLeft) goNext();
+                }}
+                className="relative w-full max-w-4xl aspect-[4/3] touch-pan-y cursor-grab active:cursor-grabbing"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Image
+                  src={GALLERY_PHOTOS[openIndex].src}
+                  alt={GALLERY_PHOTOS[openIndex].alt}
+                  fill
+                  className="object-contain pointer-events-none select-none"
+                  sizes="100vw"
+                  draggable={false}
+                />
+              </motion.div>
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
