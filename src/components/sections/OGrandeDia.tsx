@@ -142,14 +142,10 @@ export function OGrandeDia() {
                     href={c.cta.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-8 inline-flex items-center gap-3 text-[10px] tracking-[0.4em] uppercase font-medium text-[var(--color-champagne-darker)] hover:text-[var(--color-champagne-deep)] transition-colors group/cta self-start"
+                    className="mt-8 inline-flex items-center gap-2 self-start py-2.5 px-5 rounded-full border border-[var(--color-champagne-deep)] text-[var(--color-champagne-darker)] hover:bg-[var(--color-champagne-darker)] hover:text-[var(--color-cream)] active:scale-[0.98] text-[10px] tracking-[0.32em] uppercase font-medium transition-all"
                   >
+                    <MapPin size={13} strokeWidth={1.6} />
                     <span>{c.cta.label}</span>
-                    <span
-                      className="inline-block w-6 h-px transition-transform group-hover/cta:w-10"
-                      style={{ background: "currentColor" }}
-                      aria-hidden
-                    />
                   </a>
                 )}
               </motion.article>

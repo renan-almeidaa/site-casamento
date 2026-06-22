@@ -34,7 +34,7 @@ export default function PresentesPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
             <Ornament className="mb-4" />
-            <p className="label-uppercase mb-2">Ou escolha um presente</p>
+            <p className="label-uppercase mb-2">Escolha um presente</p>
             <h2 className="heading-display text-3xl md:text-4xl">
               Para o nosso novo lar
             </h2>
