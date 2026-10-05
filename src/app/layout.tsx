@@ -19,11 +19,11 @@ const bricolage = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
-  title: "Samara & Renan · 07.02.2026",
+  title: "Samara & Renan · 07.02.2027",
   description:
     "Site oficial do casamento de Samara e Renan. Confirme sua presença, veja informações da cerimônia e da recepção, e participe da nossa lista de presentes.",
   openGraph: {
-    title: "Samara & Renan · 07.02.2026",
+    title: "Samara & Renan · 07.02.2027",
     description:
       "Estamos noivos! Confirme sua presença em nosso casamento.",
     locale: "pt_BR",

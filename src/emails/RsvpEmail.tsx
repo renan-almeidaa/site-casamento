@@ -92,7 +92,7 @@ export function RsvpEmail({
           )}
           <Hr style={hr} />
           <Text style={footer}>
-            Site dos noivos · Samara &amp; Renan · 07.02.2026
+            Site dos noivos · Samara &amp; Renan · 07.02.2027
           </Text>
         </Container>
       </Body>
