@@ -1,6 +1,6 @@
 # Site de Casamento — Samara & Renan
 
-Site oficial do casamento de Samara e Renan (11/10/2026).
+Site oficial do casamento de Samara e Renan (07/02/2026).
 
 > 📖 Para o briefing completo do projeto, veja [claude.md](./claude.md).
 

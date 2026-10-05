@@ -63,7 +63,7 @@ export function GiftPurchaseEmail({
             comprovante chegar.
           </Text>
           <Text style={footer}>
-            Site dos noivos · Samara &amp; Renan · 11.10.2026
+            Site dos noivos · Samara &amp; Renan · 07.02.2026
           </Text>
         </Container>
       </Body>

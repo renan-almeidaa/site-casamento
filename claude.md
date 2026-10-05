@@ -8,7 +8,7 @@ Briefing completo do projeto. Este arquivo é a fonte da verdade para qualquer a
 
 ## 1. Visão geral
 
-Site one-page (com rotas auxiliares para RSVP/admin/presentes) para o casamento de **Samara & Renan**, em **11 de outubro de 2026**. Funciona como cartão-convite digital, hub de informações, ferramenta de RSVP e lista de presentes com pagamento via PIX/cartão.
+Site one-page (com rotas auxiliares para RSVP/admin/presentes) para o casamento de **Samara & Renan**, em **7 de fevereiro de 2026**. Funciona como cartão-convite digital, hub de informações, ferramenta de RSVP e lista de presentes com pagamento via PIX/cartão.
 
 **Princípios de design:**
 - Elegante, romântico, leve. Animações sutis (não exagerar — performance importa, principalmente em celular).
@@ -134,7 +134,7 @@ Quando o site carrega, **antes** da home, mostra uma tela de abertura curta (~1.
 ### 5.2. Hero
 - Foto do casal (escolher a melhor de `fotos do casal/`) com leve overlay champagne para legibilidade.
 - Título **"Samara & Renan"** em Cormorant italic.
-- **Contagem regressiva** até 11/10/2026 10:30 (dias / horas / minutos / segundos), em pílulas champagne.
+- **Contagem regressiva** até 07/02/2026 10:30 (dias / horas / minutos / segundos), em pílulas champagne.
 - Versículo: *"Isto é obra do Senhor, e é maravilhosa aos nossos olhos." — Salmos 118:23*
 - CTAs: `Confirmar Presença` (primário) + `Lista de Presentes` (outline).
 
@@ -148,7 +148,7 @@ Aparece após scrollar a hero. Itens: **Início · Nossa História · O Grande D
 
 ### 5.5. O Grande Dia
 Três blocos lado a lado (em desktop) / empilhados (mobile):
-- **Cerimônia** — 11 de outubro de 2026 · 10:30 · Igreja Assembleia de Deus – Jardim Catuaí · *R. Joaquim Ferreira Sobrinho, 281 – Núcleo Hab. Parigot de Souza, Apucarana-PR, 86802-610* · botão "Ver no mapa" → link Google Maps.
+- **Cerimônia** — 7 de fevereiro de 2026 · 10:30 · Igreja Assembleia de Deus – Jardim Catuaí · *R. Joaquim Ferreira Sobrinho, 281 – Núcleo Hab. Parigot de Souza, Apucarana-PR, 86802-610* · botão "Ver no mapa" → link Google Maps.
 - **Recepção** — Logo após a cerimônia · Recanto Vô Coruja, Apucarana-PR · botão "Ver no mapa".
 - **Traje** — Esporte fino / a critério do convidado (texto a definir com o casal).
 
@@ -482,7 +482,7 @@ casamento/
 | Item | Texto |
 |---|---|
 | Casal | Samara & Renan |
-| Data | 11 de outubro de 2026 |
+| Data | 7 de fevereiro de 2026 |
 | Horário | 10h30 |
 | Cerimônia | Igreja Assembleia de Deus – Jardim Catuaí |
 | Endereço cerimônia | R. Joaquim Ferreira Sobrinho, 281 – Núcleo Hab. Parigot de Souza, Apucarana-PR, 86802-610 |
@@ -538,7 +538,7 @@ A copy de "Nossa História" é livre — escrever um parágrafo curto inspirado 
 - Animações: nada de `setInterval` para parallax; só `whileInView` do Framer Motion.
 - Acessibilidade: todo card clicável tem `role="button"` + `aria-label` descritivo.
 - Idioma: pt-BR. `<html lang="pt-BR">`.
-- SEO: `<title>Samara & Renan · 11.10.2026</title>`, OG image com a foto do casal.
+- SEO: `<title>Samara & Renan · 07.02.2026</title>`, OG image com a foto do casal.
 - **Não inventar dados** (datas, valores, presentes) — pedir ao Renan se faltar algo.
 - **Não criar README ou docs extras** sem o Renan pedir.
 - Deploy é manual no Netlify pelo Renan — **não tentar fazer push ou deploy automaticamente**.
