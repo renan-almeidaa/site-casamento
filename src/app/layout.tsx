@@ -1,19 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Bricolage_Grotesque } from "next/font/google";
+import localFont from "next/font/local";
 import { ToasterProvider } from "@/components/ui/toaster";
 import "./globals.css";
 
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  weight: ["200", "300", "400", "500", "600", "700", "800", "900"],
-  style: ["normal", "italic"],
+// Fontes hospedadas no próprio projeto (subset latin, variáveis) — o build
+// não depende de baixar do Google Fonts, o que quebrava o deploy no Netlify.
+const fraunces = localFont({
+  src: [
+    { path: "./fonts/fraunces-latin.woff2", weight: "200 900", style: "normal" },
+    { path: "./fonts/fraunces-italic-latin.woff2", weight: "200 900", style: "italic" },
+  ],
   variable: "--font-fraunces",
   display: "swap",
 });
 
-const bricolage = Bricolage_Grotesque({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+const bricolage = localFont({
+  src: [{ path: "./fonts/bricolage-latin.woff2", weight: "300 700", style: "normal" }],
   variable: "--font-bricolage",
   display: "swap",
 });
