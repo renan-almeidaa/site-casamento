@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, MessageCircle, Trash2, Undo2 } from "lucide-react";
+import { Copy, Gift, HandCoins, MessageCircle, Trash2, Undo2 } from "lucide-react";
 import type { AdminChaResponse } from "@/lib/cha-data";
 import { CHA, WEDDING } from "@/lib/wedding-data";
 import { CHA_ITENS } from "@/data/cha-itens";
@@ -142,9 +142,15 @@ export function ChaManager({
                         )}
                       </td>
                       <td className="px-4 py-3 text-[var(--color-text)]">
-                        {r.givesPix && <p>💸 Pix / cartão</p>}
+                        {r.givesPix && (
+                          <p className="flex items-center gap-1.5">
+                            <HandCoins size={13} className="text-[var(--color-champagne-deep)]" /> Pix / cartão
+                          </p>
+                        )}
                         {r.items.map((it) => (
-                          <p key={it.id}>🎁 {it.nome}</p>
+                          <p key={it.id} className="flex items-center gap-1.5">
+                            <Gift size={13} className="text-[var(--color-champagne-deep)]" /> {it.nome}
+                          </p>
                         ))}
                         {!r.givesPix && r.items.length === 0 && (
                           <span className="text-[var(--color-text-soft)]">—</span>

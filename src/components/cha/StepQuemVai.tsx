@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, MessageCircle, Search } from "lucide-react";
+import { Check, MessageCircle, Search, X, type LucideIcon } from "lucide-react";
 import { maskPhone } from "@/lib/utils";
 import { WEDDING } from "@/lib/wedding-data";
 
@@ -150,13 +150,13 @@ export function StepQuemVai({
               <ChoiceButton
                 active={going === true}
                 onClick={() => onGoing(true)}
-                emoji="🥳"
+                icon={Check}
                 label="Sim, nós vamos!"
               />
               <ChoiceButton
                 active={going === false}
                 onClick={() => onGoing(false)}
-                emoji="😢"
+                icon={X}
                 label="Não, infelizmente não poderemos ir"
               />
             </div>
@@ -234,12 +234,12 @@ export function StepQuemVai({
 function ChoiceButton({
   active,
   onClick,
-  emoji,
+  icon: Icon,
   label,
 }: {
   active: boolean;
   onClick: () => void;
-  emoji: string;
+  icon: LucideIcon;
   label: string;
 }) {
   return (
@@ -253,8 +253,15 @@ function ChoiceButton({
           : "border-[var(--color-border-soft)] bg-white text-[var(--color-ink)] hover:border-[var(--color-champagne)]"
       }`}
     >
-      <span className="text-xl" aria-hidden>
-        {emoji}
+      <span
+        className={`w-8 h-8 rounded-full border flex items-center justify-center shrink-0 ${
+          active
+            ? "border-[var(--color-cream)]/40 text-[var(--color-cream)]"
+            : "border-[var(--color-border-soft)] text-[var(--color-champagne-deep)]"
+        }`}
+        aria-hidden
+      >
+        <Icon size={16} strokeWidth={2} />
       </span>
       <span className="text-[16px] font-medium">{label}</span>
     </button>

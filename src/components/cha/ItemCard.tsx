@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check } from "lucide-react";
+import { Check, Gift } from "lucide-react";
 
 // Frases do balãozinho dos itens já escolhidos. A escolha é determinística
 // pelo id (evita mismatch de hidratação e cada item tem "sua" frase).
@@ -46,9 +46,12 @@ export function ItemCard({ id, nome, selected, taken, onToggle }: Props) {
           onClick={() => setTapped(true)}
           className="w-full min-h-[56px] flex items-center gap-3 px-4 py-3 rounded-2xl border border-dashed border-[var(--color-border-soft)] bg-[var(--color-cream-deep)]/40 text-left cursor-not-allowed"
         >
-          <span className="text-lg shrink-0 grayscale opacity-70" aria-hidden>
-            🎁
-          </span>
+          <Gift
+            size={18}
+            strokeWidth={1.5}
+            className="shrink-0 text-[var(--color-champagne-light)] opacity-70"
+            aria-hidden
+          />
           <span className="text-[15px] text-[var(--color-text-soft)]/70 line-through decoration-[var(--color-champagne-deep)] decoration-2">
             {nome}
           </span>

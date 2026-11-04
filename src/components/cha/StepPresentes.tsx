@@ -1,9 +1,10 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, HandCoins } from "lucide-react";
 import { CHA_COMODOS, CHA_ITENS } from "@/data/cha-itens";
 import { ItemCard } from "@/components/cha/ItemCard";
 import { PixInfo } from "@/components/cha/PixInfo";
+import { COMODO_ICONS } from "@/components/cha/comodo-icons";
 
 type Props = {
   chosen: Set<string>;
@@ -36,7 +37,12 @@ export function StepPresentes({ chosen, onToggle, taken, givesPix, onTogglePix }
           aria-pressed={givesPix}
           className="w-full flex items-center gap-3 text-left"
         >
-          <span className="text-2xl" aria-hidden>💸</span>
+          <span
+            className="w-11 h-11 rounded-full border border-[var(--color-border-soft)] bg-white flex items-center justify-center shrink-0 text-[var(--color-champagne-deep)]"
+            aria-hidden
+          >
+            <HandCoins size={20} strokeWidth={1.5} />
+          </span>
           <span className="flex-1">
             <span className="block text-base font-medium text-[var(--color-ink)]">
               Prefiro mandar via Pix ou cartão
@@ -72,23 +78,35 @@ export function StepPresentes({ chosen, onToggle, taken, givesPix, onTogglePix }
       {/* Atalhos por cômodo */}
       <div className="sticky top-0 z-30 -mx-5 px-5 py-2.5 bg-[var(--color-cream)]/95 backdrop-blur border-b border-[var(--color-border-soft)]">
         <div className="flex flex-wrap justify-center gap-2">
-          {CHA_COMODOS.map((c) => (
+          {CHA_COMODOS.map((c) => {
+            const Icon = COMODO_ICONS[c.id]!;
+            return (
             <button
               key={c.id}
               type="button"
               onClick={() => goTo(c.id)}
-              className="rounded-full border border-[var(--color-border-soft)] bg-white px-3.5 py-2 text-[13px] text-[var(--color-text)] hover:border-[var(--color-champagne)]"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border-soft)] bg-white px-3.5 py-2 text-[13px] text-[var(--color-text)] hover:border-[var(--color-champagne)]"
             >
-              <span aria-hidden>{c.emoji}</span> {c.short}
+              <Icon size={14} strokeWidth={1.6} className="text-[var(--color-champagne-deep)]" aria-hidden />
+              {c.short}
             </button>
-          ))}
+            );
+          })}
         </div>
       </div>
 
-      {CHA_COMODOS.map((c) => (
+      {CHA_COMODOS.map((c) => {
+        const Icon = COMODO_ICONS[c.id]!;
+        return (
         <section key={c.id} id={`comodo-${c.id}`} className="scroll-mt-32">
-          <h3 className="heading-display text-2xl mb-4 flex items-center gap-2">
-            <span aria-hidden>{c.emoji}</span> {c.label}
+          <h3 className="heading-display text-2xl mb-4 flex items-center gap-3">
+            <span
+              className="w-10 h-10 rounded-full border border-[var(--color-border-soft)] bg-white flex items-center justify-center text-[var(--color-champagne-deep)]"
+              aria-hidden
+            >
+              <Icon size={18} strokeWidth={1.5} />
+            </span>
+            {c.label}
           </h3>
           <div className="space-y-5">
             {c.grupos.map((g) => (
@@ -110,7 +128,8 @@ export function StepPresentes({ chosen, onToggle, taken, givesPix, onTogglePix }
             ))}
           </div>
         </section>
-      ))}
+        );
+      })}
     </div>
   );
 }

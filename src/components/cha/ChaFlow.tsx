@@ -2,7 +2,16 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, CalendarHeart, Loader2, MapPin } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarHeart,
+  Gift,
+  HandCoins,
+  Heart,
+  House,
+  Loader2,
+  MapPin,
+} from "lucide-react";
 import { CHA, WEDDING } from "@/lib/wedding-data";
 import { getChaItem } from "@/data/cha-itens";
 import { Ornament, HorizontalDivider } from "@/components/ui/ornament";
@@ -14,7 +23,7 @@ type Step = 1 | 2 | 3 | "done";
 
 const STEP_TITLES: Record<1 | 2 | 3, string> = {
   1: "Quem é você?",
-  2: "Escolha o presente 🎁",
+  2: "Escolha o presente",
   3: "Tudo certo?",
 };
 
@@ -149,7 +158,7 @@ export function ChaFlow() {
             </div>
             <p className="label-uppercase">Passo {step} de 3</p>
             <h2 className="heading-display text-3xl mt-1">
-              {step === 2 && !vai ? "Quer mandar um presentinho? 🎁" : STEP_TITLES[step]}
+              {step === 2 && !vai ? "Quer mandar um presentinho?" : STEP_TITLES[step]}
             </h2>
             {step === 2 && (
               <p className="text-[15px] text-[var(--color-text-soft)] mt-2">
@@ -231,11 +240,15 @@ export function ChaFlow() {
                     ) : (
                       <ul className="space-y-1.5">
                         {givesPix && (
-                          <li className="text-[15px] text-[var(--color-ink)]">💸 Via Pix ou cartão</li>
+                          <li className="flex items-center gap-2.5 text-[15px] text-[var(--color-ink)]">
+                            <HandCoins size={16} strokeWidth={1.6} className="text-[var(--color-champagne-deep)]" />
+                            Via Pix ou cartão
+                          </li>
                         )}
                         {chosenItems.map((it) => (
-                          <li key={it!.id} className="text-[15px] text-[var(--color-ink)]">
-                            🎁 {it!.nome}
+                          <li key={it!.id} className="flex items-center gap-2.5 text-[15px] text-[var(--color-ink)]">
+                            <Gift size={16} strokeWidth={1.6} className="text-[var(--color-champagne-deep)]" />
+                            {it!.nome}
                           </li>
                         ))}
                       </ul>
@@ -266,9 +279,9 @@ export function ChaFlow() {
                   initial={{ scale: 0.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: "spring", stiffness: 220, damping: 18 }}
-                  className="text-6xl mb-4"
+                  className="mx-auto mb-5 w-20 h-20 rounded-full border border-[var(--color-champagne)] bg-white flex items-center justify-center text-[var(--color-champagne-deep)] shadow-[0_12px_30px_-16px_rgba(60,40,20,0.5)]"
                 >
-                  {vai ? "🏡" : "💛"}
+                  {vai ? <House size={32} strokeWidth={1.3} /> : <Heart size={30} strokeWidth={1.3} />}
                 </motion.div>
                 <h2 className="heading-display text-3xl mb-3">
                   {vai ? "Obrigado!" : "Obrigado por avisar!"}
@@ -281,7 +294,7 @@ export function ChaFlow() {
                 {givesPix && (
                   <div className="card-soft p-5 sm:p-6 mt-8 text-left">
                     <p className="text-base font-medium text-[var(--color-ink)] mb-4 text-center">
-                      Dados para o Pix 💸
+                      Dados para o Pix
                     </p>
                     <PixInfo />
                   </div>
