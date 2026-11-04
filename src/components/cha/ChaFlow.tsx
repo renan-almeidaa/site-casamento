@@ -21,6 +21,7 @@ const STEP_TITLES: Record<1 | 2 | 3, string> = {
 export function ChaFlow() {
   const [step, setStep] = useState<Step>(1);
   const [family, setFamily] = useState<ChaFamily | null>(null);
+  const [going, setGoing] = useState<boolean | null>(null);
   const [attending, setAttending] = useState<Set<string>>(new Set());
   const [whatsapp, setWhatsapp] = useState("");
   const [chosen, setChosen] = useState<Set<string>>(new Set());
@@ -30,7 +31,7 @@ export function ChaFlow() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const vai = attending.size > 0;
+  const vai = going === true && attending.size > 0;
 
   const loadTaken = useCallback(async () => {
     try {
@@ -65,6 +66,8 @@ export function ChaFlow() {
 
   const nextFromStep1 = () => {
     if (!family) return setError("Digite seu nome e toque nele na lista 😊");
+    if (going === null) return setError("Conta pra gente: vocês vão? 😊");
+    if (going && attending.size === 0) return setError("Toque no nome de quem vai 😊");
     if (whatsapp.replace(/\D/g, "").length < 10) {
       return setError("Coloque seu WhatsApp com DDD 📱");
     }
@@ -76,6 +79,8 @@ export function ChaFlow() {
     if (vai && chosen.size === 0 && !givesPix) {
       return setError("Escolha pelo menos um presente (ou o Pix) 🎁");
     }
+    // Quem não vai e não quer presentear: envia direto, sem revisão.
+    if (!vai && chosen.size === 0 && !givesPix) return void submit();
     go(3);
   };
 
@@ -89,7 +94,7 @@ export function ChaFlow() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           familyId: family.id,
-          attendingGuestIds: [...attending],
+          attendingGuestIds: going ? [...attending] : [],
           whatsapp,
           givesPix,
           itemIds: [...chosen],
@@ -169,8 +174,15 @@ export function ChaFlow() {
                 family={family}
                 onPickFamily={(f) => {
                   setFamily(f);
+                  setGoing(null);
                   setAttending(new Set());
                   setError(null);
+                }}
+                going={going}
+                onGoing={(v) => {
+                  setGoing(v);
+                  setError(null);
+                  if (!v) setAttending(new Set());
                 }}
                 selected={attending}
                 onToggleMember={(id) => setAttending((s) => toggle(s, id))}
@@ -306,16 +318,27 @@ export function ChaFlow() {
             )}
             {step === 1 && (
               <button type="button" onClick={nextFromStep1} className="btn-cta flex-1 !py-4">
-                Continuar
+                {going === false ? "Confirmar Ausência" : "Continuar"}
               </button>
             )}
             {step === 2 && (
-              <button type="button" onClick={nextFromStep2} className="btn-cta flex-1 !py-4 !px-6">
-                {giftCount > 0
-                  ? `Continuar (${giftCount})`
-                  : vai
-                    ? "Continuar"
-                    : "Pular"}
+              <button
+                type="button"
+                onClick={nextFromStep2}
+                disabled={submitting}
+                className="btn-cta flex-1 !py-4 !px-6"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> Enviando...
+                  </>
+                ) : giftCount > 0 ? (
+                  `Continuar (${giftCount})`
+                ) : vai ? (
+                  "Continuar"
+                ) : (
+                  "Pular e enviar"
+                )}
               </button>
             )}
             {step === 3 && (

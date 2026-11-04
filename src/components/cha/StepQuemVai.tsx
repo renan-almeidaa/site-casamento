@@ -13,6 +13,8 @@ export type ChaFamily = {
 type Props = {
   family: ChaFamily | null;
   onPickFamily: (f: ChaFamily) => void;
+  going: boolean | null;
+  onGoing: (v: boolean) => void;
   selected: Set<string>;
   onToggleMember: (id: string) => void;
   whatsapp: string;
@@ -22,6 +24,8 @@ type Props = {
 export function StepQuemVai({
   family,
   onPickFamily,
+  going,
+  onGoing,
   selected,
   onToggleMember,
   whatsapp,
@@ -108,11 +112,33 @@ export function StepQuemVai({
 
         {family && (
           <div className="mt-5">
+            <p className="text-base font-medium text-[var(--color-ink)] mb-3">
+              Vocês vão?
+            </p>
+            <div className="grid gap-2.5">
+              <ChoiceButton
+                active={going === true}
+                onClick={() => onGoing(true)}
+                emoji="🥳"
+                label="Sim, nós vamos!"
+              />
+              <ChoiceButton
+                active={going === false}
+                onClick={() => onGoing(false)}
+                emoji="😢"
+                label="Não, infelizmente não poderemos ir"
+              />
+            </div>
+          </div>
+        )}
+
+        {family && going === true && (
+          <div className="mt-5">
             <p className="text-base font-medium text-[var(--color-ink)] mb-1">
               Quem vai?
             </p>
             <p className="text-[14px] text-[var(--color-text-soft)] mb-3">
-              Toque em quem vai. Ninguém marcado = vocês não vão 😢
+              Toque no nome de quem vai 😊
             </p>
             <div className="flex flex-col gap-2">
               {family.members.map((m) => {
@@ -153,7 +179,7 @@ export function StepQuemVai({
         )}
       </div>
 
-      {family && (
+      {family && going !== null && (
         <div className="card-soft p-5 sm:p-6">
           <label htmlFor="cha-whats" className="block text-base font-medium text-[var(--color-ink)] mb-3">
             Seu WhatsApp
@@ -171,5 +197,35 @@ export function StepQuemVai({
         </div>
       )}
     </div>
+  );
+}
+
+function ChoiceButton({
+  active,
+  onClick,
+  emoji,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  emoji: string;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`min-h-[60px] flex items-center gap-3 px-5 py-3.5 rounded-2xl border-[1.5px] text-left transition-all active:scale-[0.98] ${
+        active
+          ? "border-[var(--color-champagne-darker)] bg-[var(--color-champagne-darker)] text-[var(--color-cream)]"
+          : "border-[var(--color-border-soft)] bg-white text-[var(--color-ink)] hover:border-[var(--color-champagne)]"
+      }`}
+    >
+      <span className="text-xl" aria-hidden>
+        {emoji}
+      </span>
+      <span className="text-[16px] font-medium">{label}</span>
+    </button>
   );
 }
