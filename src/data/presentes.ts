@@ -163,6 +163,7 @@ export const PRESENTES: Presente[] = [
     id: "forno-eletrico",
     nome: "Forno Elétrico",
     valor: 500,
+    imagem: "/fotos-dos-presentes/forno-eletrico.webp",
     icon: "fryer",
     pastel: "yellow",
     categoria: "cozinha",
