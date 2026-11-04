@@ -4,7 +4,8 @@
 #
 # Secrets necessários (Settings → Secrets and variables → Actions):
 #   SUPABASE_URL       → mesmo valor de NEXT_PUBLIC_SUPABASE_URL
-#   SUPABASE_ANON_KEY  → mesmo valor de NEXT_PUBLIC_SUPABASE_ANON_KEY
+#   SUPABASE_ANON_KEY  → mesmo valor de NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+#                        (sb_publishable_...; a anon key legada eyJ... não é mais aceita)
 
 name: Supabase keepalive
 
