@@ -126,7 +126,7 @@ export const PRESENTES: Presente[] = [
   {
     id: "mesa-cadeiras",
     nome: "Mesa e Cadeiras",
-    valor: 1972,
+    valor: 1500,
     imagem: "/fotos-dos-presentes/mesas e cadeiras.png",
     icon: "dinner",
     pastel: "yellow",
