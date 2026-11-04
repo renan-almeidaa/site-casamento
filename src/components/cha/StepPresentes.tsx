@@ -71,22 +71,22 @@ export function StepPresentes({ chosen, onToggle, taken, givesPix, onTogglePix }
 
       {/* Atalhos por cômodo */}
       <div className="sticky top-0 z-30 -mx-5 px-5 py-2.5 bg-[var(--color-cream)]/95 backdrop-blur border-b border-[var(--color-border-soft)]">
-        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+        <div className="flex flex-wrap justify-center gap-2">
           {CHA_COMODOS.map((c) => (
             <button
               key={c.id}
               type="button"
               onClick={() => goTo(c.id)}
-              className="shrink-0 rounded-full border border-[var(--color-border-soft)] bg-white px-4 py-2 text-[13px] text-[var(--color-text)] hover:border-[var(--color-champagne)]"
+              className="rounded-full border border-[var(--color-border-soft)] bg-white px-3.5 py-2 text-[13px] text-[var(--color-text)] hover:border-[var(--color-champagne)]"
             >
-              <span aria-hidden>{c.emoji}</span> {c.label}
+              <span aria-hidden>{c.emoji}</span> {c.short}
             </button>
           ))}
         </div>
       </div>
 
       {CHA_COMODOS.map((c) => (
-        <section key={c.id} id={`comodo-${c.id}`} className="scroll-mt-20">
+        <section key={c.id} id={`comodo-${c.id}`} className="scroll-mt-32">
           <h3 className="heading-display text-2xl mb-4 flex items-center gap-2">
             <span aria-hidden>{c.emoji}</span> {c.label}
           </h3>

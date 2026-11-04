@@ -8,6 +8,8 @@
 export type ChaComodo = {
   id: string;
   label: string;
+  /** Nome curto para o botão de atalho */
+  short: string;
   emoji: string;
   grupos: { label: string; itens: string[] }[];
 };
@@ -16,6 +18,7 @@ export const CHA_COMODOS: ChaComodo[] = [
   {
     id: "cozinha",
     label: "Cozinha",
+    short: "Cozinha",
     emoji: "🍳",
     grupos: [
       {
@@ -50,13 +53,20 @@ export const CHA_COMODOS: ChaComodo[] = [
       },
       {
         label: "Eletroportáteis",
-        itens: ["Sanduicheira", "Liquidificador", "Air fryer", "Micro-ondas"],
+        itens: [
+          "Sanduicheira",
+          "Liquidificador",
+          "Batedeira",
+          "Air fryer",
+          "Micro-ondas",
+        ],
       },
     ],
   },
   {
     id: "quarto",
     label: "Quarto",
+    short: "Quarto",
     emoji: "🛏️",
     grupos: [
       {
@@ -81,6 +91,7 @@ export const CHA_COMODOS: ChaComodo[] = [
   {
     id: "banheiro",
     label: "Banheiro",
+    short: "Banheiro",
     emoji: "🧴",
     grupos: [
       {
@@ -107,6 +118,7 @@ export const CHA_COMODOS: ChaComodo[] = [
   {
     id: "sala",
     label: "Sala",
+    short: "Sala",
     emoji: "🛋️",
     grupos: [
       {
@@ -134,6 +146,7 @@ export const CHA_COMODOS: ChaComodo[] = [
   {
     id: "servico",
     label: "Área de Serviço",
+    short: "Serviço",
     emoji: "🧺",
     grupos: [
       {
@@ -162,6 +175,7 @@ export const CHA_COMODOS: ChaComodo[] = [
   {
     id: "lazer",
     label: "Área de Lazer",
+    short: "Lazer",
     emoji: "🔥",
     grupos: [
       {

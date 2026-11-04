@@ -88,14 +88,6 @@
 }
 
 @layer utilities {
-  /* Rolagem horizontal sem barra visível (chips do chá) */
-  .no-scrollbar {
-    scrollbar-width: none;
-  }
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
   /* Label uppercase — agora com tracking maior e cor mais autoral */
   .label-uppercase {
     font-family: var(--font-sans);
