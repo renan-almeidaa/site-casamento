@@ -4,6 +4,8 @@ import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { getDemoStore, newId } from "@/lib/demo-store";
 import { sendBrevoEmail, getNotificationEmails } from "@/lib/brevo";
 import { GiftPurchaseEmail } from "@/emails/GiftPurchaseEmail";
+import { PRESENTES, getLote, temLotes } from "@/data/presentes";
+import { registerGiftWithLots } from "@/lib/gift-lots";
 import {
   rateLimit,
   getClientIp,
@@ -28,6 +30,7 @@ const schema = z.object({
   items: z.array(itemSchema).min(1).max(50),
   total: z.number().nonnegative().max(200_000),
   paymentMethod: z.enum(["pix", "cartao"]).optional().default("pix"),
+  previousPurchaseId: z.string().uuid().optional().nullable(),
 });
 
 async function notify(payload: {
@@ -73,9 +76,52 @@ export async function POST(request: Request) {
   }
   const data = parsed.data;
 
+  // Presente grande só pode ser comprado em lote. Carrinho antigo com o
+  // presente inteiro cai aqui e o item é retirado pelo cliente.
+  const inteiros = data.items
+    .filter((it) => PRESENTES.some((p) => p.id === it.id && temLotes(p)))
+    .map((it) => it.id);
+  if (inteiros.length > 0) {
+    return NextResponse.json(
+      { error: "taken", takenItemIds: inteiros },
+      { status: 409 },
+    );
+  }
+
+  const lotItems = data.items.filter((it) => it.id.includes("--lote-"));
+  for (const it of lotItems) {
+    const lote = getLote(it.id);
+    if (!lote || it.qtd !== 1 || it.valor !== lote.valor) {
+      return NextResponse.json({ error: "Lote inválido" }, { status: 400 });
+    }
+  }
+
   const supa = createSupabaseServiceClient();
   let purchaseId: string;
-  if (supa) {
+  if (lotItems.length > 0 || data.previousPurchaseId) {
+    let result;
+    try {
+      result = await registerGiftWithLots({
+        buyerName: data.buyerName,
+        buyerWhatsapp: data.buyerWhatsapp,
+        items: data.items,
+        total: data.total,
+        paymentMethod: data.paymentMethod,
+        lotIds: lotItems.map((it) => it.id),
+        previousId: data.previousPurchaseId ?? null,
+      });
+    } catch (err) {
+      console.error("[Presente] Erro ao gravar com lotes", err);
+      return NextResponse.json({ error: "Erro ao gravar" }, { status: 500 });
+    }
+    if (!result.ok) {
+      return NextResponse.json(
+        { error: "taken", takenItemIds: result.taken },
+        { status: 409 },
+      );
+    }
+    purchaseId = result.id;
+  } else if (supa) {
     const { data: insert, error } = await supa
       .from("gift_purchases")
       .insert({

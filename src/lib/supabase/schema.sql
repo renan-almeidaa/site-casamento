@@ -158,3 +158,68 @@ $$;
 -- Só o servidor (service role) pode chamar a função.
 revoke execute on function submit_cha_rsvp(uuid, uuid[], text, boolean, text, text[]) from public, anon, authenticated;
 grant execute on function submit_cha_rsvp(uuid, uuid[], text, boolean, text, text[]) to service_role;
+
+-- =====================================================================
+-- Lotes dos presentes grandes
+-- Rode este bloco inteiro no SQL Editor (é idempotente).
+-- =====================================================================
+
+-- lot_id como PK garante que cada lote tem um dono só. Apagar o registro
+-- do presente libera os lotes dele.
+create table if not exists gift_lot_claims (
+  lot_id text primary key,
+  purchase_id uuid not null references gift_purchases(id) on delete cascade,
+  created_at timestamptz default now()
+);
+create index if not exists gift_lot_claims_purchase_idx on gift_lot_claims(purchase_id);
+
+alter table gift_lot_claims enable row level security;
+
+drop policy if exists "admin all on gift_lot_claims" on gift_lot_claims;
+create policy "admin all on gift_lot_claims" on gift_lot_claims
+  for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+-- Grava o presente + lotes numa transação só. Se outra pessoa pegou algum
+-- lote, nada é gravado e a função devolve quais já têm dono. p_previous_id é
+-- o registro anterior da mesma sessão (convidado voltou e reenviou).
+create or replace function register_gift_purchase(
+  p_buyer_name text,
+  p_buyer_whatsapp text,
+  p_items jsonb,
+  p_total numeric,
+  p_payment_method text,
+  p_lot_ids text[],
+  p_previous_id uuid
+) returns json
+language plpgsql
+as $$
+declare
+  v_id uuid;
+begin
+  begin
+    if p_previous_id is not null then
+      delete from gift_purchases where id = p_previous_id and status = 'aguardando';
+    end if;
+
+    insert into gift_purchases (buyer_name, buyer_whatsapp, items, total, payment_method, status)
+    values (p_buyer_name, p_buyer_whatsapp, p_items, p_total, p_payment_method, 'aguardando')
+    returning id into v_id;
+
+    insert into gift_lot_claims (lot_id, purchase_id)
+    select unnest(p_lot_ids), v_id;
+  exception when unique_violation then
+    return json_build_object(
+      'ok', false,
+      'taken', (select coalesce(json_agg(lot_id), '[]'::json)
+                from gift_lot_claims
+                where lot_id = any(p_lot_ids)
+                  and purchase_id is distinct from p_previous_id)
+    );
+  end;
+  return json_build_object('ok', true, 'id', v_id);
+end;
+$$;
+
+-- Só o servidor (service role) pode chamar a função.
+revoke execute on function register_gift_purchase(text, text, jsonb, numeric, text, text[], uuid) from public, anon, authenticated;
+grant execute on function register_gift_purchase(text, text, jsonb, numeric, text, text[], uuid) to service_role;

@@ -517,6 +517,7 @@ export async function deleteGiftPurchase(id: string) {
   }
   const store = getDemoStore();
   store.gift_purchases = store.gift_purchases.filter((x) => x.id !== id);
+  store.gift_lot_claims = store.gift_lot_claims.filter((c) => c.purchase_id !== id);
 }
 
 export async function adminStats() {

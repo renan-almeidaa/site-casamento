@@ -9,6 +9,7 @@ export type CartItem = {
   valor: number;
   qtd: number;
   isCustomValue?: boolean;
+  isLote?: boolean;
 };
 
 type CartState = {

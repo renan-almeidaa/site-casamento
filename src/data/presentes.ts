@@ -125,7 +125,7 @@ export const PRESENTES: Presente[] = [
   },
   {
     id: "smart-tv",
-    nome: "Smart TV",
+    nome: "Televisão",
     valor: 1852,
     imagem: "/fotos-dos-presentes/smart tv.png",
     icon: "home",
@@ -483,6 +483,34 @@ export const PRESENTES: Presente[] = [
     categoria: "lua-de-mel",
   },
 ];
+
+// Presentes acima deste valor são divididos em lotes: várias pessoas
+// participam do mesmo presente, e cada lote tem um dono só.
+export const VALOR_MINIMO_LOTES = 1000;
+export const LOTES_POR_PRESENTE = 5;
+
+export const temLotes = (p: Presente) => p.valor > VALOR_MINIMO_LOTES;
+
+export const valorDoLote = (p: Presente) =>
+  Math.round((p.valor * 100) / LOTES_POR_PRESENTE) / 100;
+
+export const loteId = (presenteId: string, numero: number) =>
+  `${presenteId}--lote-${numero}`;
+
+export function getLote(id: string) {
+  const m = /^(.+)--lote-(\d+)$/.exec(id);
+  if (!m) return undefined;
+  const presente = PRESENTES.find((p) => p.id === m[1]);
+  const numero = Number(m[2]);
+  if (!presente || !temLotes(presente)) return undefined;
+  if (numero < 1 || numero > LOTES_POR_PRESENTE) return undefined;
+  return {
+    id,
+    numero,
+    nome: `${presente.nome} — Lote ${numero} de ${LOTES_POR_PRESENTE}`,
+    valor: valorDoLote(presente),
+  };
+}
 
 export const CATEGORIAS = [
   { id: "todos", label: "Todos" },

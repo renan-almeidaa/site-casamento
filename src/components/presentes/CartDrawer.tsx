@@ -82,7 +82,7 @@ export function CartDrawer() {
                       className="card-soft p-4 flex items-center gap-3"
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="font-[var(--font-display)] text-lg text-[var(--color-ink)] leading-tight truncate">
+                        <p className="font-[var(--font-display)] text-lg text-[var(--color-ink)] leading-tight">
                           {it.nome}
                         </p>
                         <p className="text-sm text-[var(--color-champagne-deep)] mt-0.5">
@@ -94,6 +94,7 @@ export function CartDrawer() {
                           )}
                         </p>
                       </div>
+                      {!it.isLote && (
                       <div className="flex items-center gap-1">
                         <button
                           type="button"
@@ -115,6 +116,7 @@ export function CartDrawer() {
                           <Plus size={13} />
                         </button>
                       </div>
+                      )}
                       <button
                         type="button"
                         aria-label="Remover"

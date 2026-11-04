@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Heart } from "lucide-react";
+import { ArrowLeft, Heart, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PRESENTES, CATEGORIAS } from "@/data/presentes";
+import { PRESENTES, CATEGORIAS, temLotes } from "@/data/presentes";
 import { GiftCard } from "@/components/presentes/GiftCard";
+import { LotGiftCard } from "@/components/presentes/LotGiftCard";
 import { CartDrawer } from "@/components/presentes/CartDrawer";
 import { CartFab } from "@/components/presentes/CartFab";
 import { Ornament } from "@/components/ui/ornament";
@@ -13,6 +14,17 @@ import { Footer } from "@/components/layout/Footer";
 
 export default function PresentesPage() {
   const [cat, setCat] = useState<string>("todos");
+  const [takenLots, setTakenLots] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    fetch("/api/presentes/lotes", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : { taken: [] }))
+      .then((d: { taken: string[] }) => setTakenLots(new Set(d.taken)))
+      .catch(() => {
+        // silencioso — o servidor recusa lote já escolhido na hora de registrar
+      });
+  }, []);
+
   const filtered =
     cat === "todos"
       ? PRESENTES
@@ -77,6 +89,24 @@ export default function PresentesPage() {
             ))}
           </div>
 
+          {filtered.some(temLotes) && (
+            <div className="max-w-2xl mx-auto mb-8 flex items-start gap-3 text-sm sm:text-[15px] leading-relaxed text-[var(--color-text)]">
+              <Users
+                size={17}
+                strokeWidth={1.6}
+                className="text-[var(--color-champagne-deep)] mt-0.5 shrink-0"
+              />
+              <p>
+                <span className="font-medium text-[var(--color-ink)]">
+                  Presentes em lotes:
+                </span>{" "}
+                os presentes maiores foram divididos em 5 lotes, assim várias
+                pessoas podem participar do mesmo presente. Escolha um ou mais
+                lotes. Os riscados já têm dono 💛
+              </p>
+            </div>
+          )}
+
           <motion.div
             layout
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6"
@@ -91,7 +121,11 @@ export default function PresentesPage() {
                   exit={{ opacity: 0, y: 12 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <GiftCard presente={p} />
+                  {temLotes(p) ? (
+                    <LotGiftCard presente={p} taken={takenLots} />
+                  ) : (
+                    <GiftCard presente={p} />
+                  )}
                 </motion.div>
               ))}
             </AnimatePresence>

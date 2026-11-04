@@ -7,10 +7,12 @@ import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { useCartStore } from "@/lib/cart-store";
 import { formatBRL, maskWhatsapp } from "@/lib/utils";
+import { useToast } from "@/components/ui/toaster";
 
 export default function ResumoPage() {
   const router = useRouter();
-  const { items, total, count } = useCartStore();
+  const { items, total, count, remove } = useCartStore();
+  const { toast } = useToast();
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -38,6 +40,18 @@ export default function ResumoPage() {
     }
     setSubmitting(true);
     try {
+      // Se o convidado voltou e está reenviando, troca o registro anterior
+      // (senão ele mesmo ficaria bloqueado pelos lotes que já reservou).
+      let previousPurchaseId: string | null = null;
+      try {
+        const raw = sessionStorage.getItem("presente-buyer");
+        if (raw) {
+          previousPurchaseId =
+            (JSON.parse(raw) as { purchaseId?: string }).purchaseId ?? null;
+        }
+      } catch {
+        // ignora sessão inválida
+      }
       const r = await fetch("/api/presentes/registrar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -52,13 +66,30 @@ export default function ResumoPage() {
           })),
           total: total(),
           paymentMethod: "pix",
+          previousPurchaseId,
         }),
       });
       const data = (await r.json().catch(() => ({}))) as {
         ok?: boolean;
         id?: string;
         error?: string;
+        takenItemIds?: string[];
       };
+      if (r.status === 409 && data.takenItemIds) {
+        const nomes = items
+          .filter((it) => data.takenItemIds!.includes(it.id))
+          .map((it) => it.nome)
+          .join(", ");
+        data.takenItemIds.forEach((id) => remove(id));
+        // Carrinho vazio volta para a lista, onde o aviso abaixo não aparece.
+        if (items.every((it) => data.takenItemIds!.includes(it.id))) {
+          toast("Esse lote acabou de ser escolhido");
+        }
+        setError(
+          `Ops! Alguém escolheu agora há pouco: ${nomes}. Tiramos do seu carrinho 😅`,
+        );
+        return;
+      }
       if (!r.ok) throw new Error(data.error ?? "Erro ao registrar presente");
       sessionStorage.setItem(
         "presente-buyer",

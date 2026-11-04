@@ -53,7 +53,7 @@ export function GiftPurchasesTable({
 
   const handleDelete = async (p: AdminGiftPurchase) => {
     const ok = window.confirm(
-      `Remover permanentemente o registro de "${p.buyerName}" (${formatBRL(p.total)})?\n\nEssa ação não pode ser desfeita.`,
+      `Remover permanentemente o registro de "${p.buyerName}" (${formatBRL(p.total)})?\n\nOs lotes desse registro voltam a ficar disponíveis. Essa ação não pode ser desfeita.`,
     );
     if (!ok) return;
     setBusy(p.id);
