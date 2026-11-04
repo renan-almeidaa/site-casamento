@@ -170,7 +170,10 @@ export function ChaFlow() {
           </div>
         )}
 
-        <AnimatePresence mode="wait">
+        {/* initial={false}: o passo 1 já chega visível no HTML. Sem isso ele
+            nascia com opacity 0 e, se o JS demorasse (celular, link aberto
+            pelo WhatsApp), o "Digite seu nome" ficava invisível. */}
+        <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={String(step)}
             initial={{ opacity: 0, y: 14 }}
