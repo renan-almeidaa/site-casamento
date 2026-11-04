@@ -28,6 +28,7 @@ export type CategoriaId =
   | "lavanderia"
   | "casa"
   | "experiencias"
+  | "divertidos"
   | "lua-de-mel"
   | "primeiros-dias";
 
@@ -78,6 +79,24 @@ export const PRESENTES: Presente[] = [
 
   // Itens com preço (do mais barato pro mais caro)
   {
+    id: "estoque-guloseimas",
+    nome: "Nosso Primeiro Estoque de Guloseimas",
+    valor: 50,
+    imagem: "/fotos-dos-presentes/primeiro-estoque-de-guloseimas.jpg",
+    icon: "heart",
+    pastel: "rose",
+    categoria: "divertidos",
+  },
+  {
+    id: "estoque-cafe",
+    nome: "Reposição do Estoque de Café",
+    valor: 50,
+    imagem: "/fotos-dos-presentes/reposicao-estoque-cafe.jpg",
+    icon: "coffee",
+    pastel: "mint",
+    categoria: "divertidos",
+  },
+  {
     id: "cantinho-verde",
     nome: "Cantinho Verde da Casa",
     valor: 60,
@@ -85,6 +104,15 @@ export const PRESENTES: Presente[] = [
     icon: "home",
     pastel: "mint",
     categoria: "casa",
+  },
+  {
+    id: "cafe-domingo",
+    nome: "Primeiro Café da Manhã de Domingo",
+    valor: 60,
+    imagem: "/fotos-dos-presentes/primeiro-cafe-domingo.jpg",
+    icon: "coffee",
+    pastel: "sky",
+    categoria: "divertidos",
   },
   {
     id: "cinema-casa",
@@ -114,13 +142,13 @@ export const PRESENTES: Presente[] = [
     categoria: "lua-de-mel",
   },
   {
-    id: "estoque-guloseimas",
-    nome: "Nosso Primeiro Estoque de Guloseimas",
+    id: "fundo-pizza",
+    nome: "Fundo para Pedir Pizza sem Culpa",
     valor: 80,
-    imagem: "/fotos-dos-presentes/primeiro-estoque-de-guloseimas.jpg",
-    icon: "heart",
-    pastel: "rose",
-    categoria: "primeiros-dias",
+    imagem: "/fotos-dos-presentes/fundo-pedir-pizza.jpg",
+    icon: "plate",
+    pastel: "yellow",
+    categoria: "divertidos",
   },
   {
     id: "piquenique",
@@ -139,6 +167,24 @@ export const PRESENTES: Presente[] = [
     icon: "home",
     pastel: "yellow",
     categoria: "casa",
+  },
+  {
+    id: "vale-folga",
+    nome: "Vale uma Folga das Tarefas Domésticas",
+    valor: 100,
+    imagem: "/fotos-dos-presentes/vale-folga-tarefas-domesticas.jpg",
+    icon: "heart",
+    pastel: "lavender",
+    categoria: "divertidos",
+  },
+  {
+    id: "jantar-comemoracao",
+    nome: "Nosso Primeiro Jantar de Comemoração",
+    valor: 100,
+    imagem: "/fotos-dos-presentes/primeiro-jantar-comemoracao.jpg",
+    icon: "dinner",
+    pastel: "rose",
+    categoria: "divertidos",
   },
   {
     id: "kit-ferramentas",
@@ -175,6 +221,15 @@ export const PRESENTES: Presente[] = [
     categoria: "lua-de-mel",
   },
   {
+    id: "fundo-churrasco",
+    nome: "Fundo do Churrasco dos Recém-Casados",
+    valor: 120,
+    imagem: "/fotos-dos-presentes/fundo-do-churrasco.jpg",
+    icon: "dinner",
+    pastel: "salmon",
+    categoria: "divertidos",
+  },
+  {
     id: "compra-mercado",
     nome: "Primeira Compra de Mercado",
     valor: 150,
@@ -208,6 +263,15 @@ export const PRESENTES: Presente[] = [
     icon: "home",
     pastel: "salmon",
     categoria: "primeiros-dias",
+  },
+  {
+    id: "encontro-surpresa",
+    nome: "Fundo para um Encontro Surpresa",
+    valor: 150,
+    imagem: "/fotos-dos-presentes/fundo-encontro-surpresa.jpg",
+    icon: "heart",
+    pastel: "rose",
+    categoria: "divertidos",
   },
   {
     id: "seguranca-lar",
@@ -295,14 +359,6 @@ export const PRESENTES: Presente[] = [
     icon: "filter",
     pastel: "sky",
     categoria: "banheiro",
-  },
-  {
-    id: "primeiras-contas",
-    nome: "Ajuda com as Primeiras Contas da Casa",
-    valor: 300,
-    icon: "home",
-    pastel: "sky",
-    categoria: "primeiros-dias",
   },
   {
     id: "espelho-corpo",
@@ -435,6 +491,7 @@ export const CATEGORIAS = [
   { id: "lavanderia", label: "Lavanderia" },
   { id: "casa", label: "Casa" },
   { id: "experiencias", label: "Experiências" },
+  { id: "divertidos", label: "Divertidos" },
   { id: "lua-de-mel", label: "Lua de Mel" },
   { id: "primeiros-dias", label: "Primeiros Dias" },
   { id: "contribuicao", label: "Contribuição" },
