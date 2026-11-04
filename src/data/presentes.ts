@@ -96,14 +96,6 @@ export const PRESENTES: Presente[] = [
     categoria: "experiencias",
   },
   {
-    id: "noite-pizza",
-    nome: "Noite de Pizza na Casa Nova",
-    valor: 80,
-    icon: "plate",
-    pastel: "yellow",
-    categoria: "primeiros-dias",
-  },
-  {
     id: "cafe-cama",
     nome: "Café da Manhã na Cama",
     valor: 80,
@@ -177,6 +169,7 @@ export const PRESENTES: Presente[] = [
     id: "compra-mercado",
     nome: "Primeira Compra de Mercado",
     valor: 150,
+    imagem: "/fotos-dos-presentes/primeira-compra-de-mercado.jpg",
     icon: "tray",
     pastel: "mint",
     categoria: "primeiros-dias",
