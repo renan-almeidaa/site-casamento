@@ -28,12 +28,14 @@ export function CotaGiftCard({
 
   const total = totalCotas(presente);
   const restante = Math.max(0, total - used);
-  const [qtd, setQtd] = useState(1);
+  // Texto do campo: pode ficar vazio enquanto a pessoa digita.
+  const [texto, setTexto] = useState("1");
+  const qtd = Number(texto) || 0;
 
   // Mantém o contador igual ao carrinho (ex.: item removido na sacola).
   const inCartQtd = inCart?.qtd ?? 0;
   useEffect(() => {
-    setQtd(inCartQtd > 0 ? inCartQtd : 1);
+    setTexto(String(inCartQtd > 0 ? inCartQtd : 1));
   }, [inCartQtd]);
 
   const salvo = inCartQtd > 0 && inCartQtd === qtd;
@@ -93,22 +95,35 @@ export function CotaGiftCard({
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={() => setQtd((n) => Math.max(1, n - 1))}
+                  onClick={() => setTexto(String(Math.max(1, qtd - 1)))}
                   disabled={qtd <= 1}
                   aria-label={`Menos cotas de ${presente.nome}`}
                   className="w-11 h-11 rounded-full border-[1.5px] border-[var(--color-champagne)] bg-white flex items-center justify-center text-[var(--color-ink)] disabled:opacity-40"
                 >
                   <Minus size={16} />
                 </button>
-                <span
-                  className="w-7 text-center text-xl font-medium text-[var(--color-ink)] tabular-nums"
-                  aria-live="polite"
-                >
-                  {qtd}
-                </span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={texto}
+                  onChange={(e) => {
+                    const digitos = e.target.value.replace(/\D/g, "");
+                    setTexto(
+                      digitos === ""
+                        ? ""
+                        : String(Math.min(restante, Number(digitos))),
+                    );
+                  }}
+                  onFocus={(e) => e.target.select()}
+                  onBlur={() => {
+                    if (qtd < 1) setTexto("1");
+                  }}
+                  aria-label={`Quantidade de cotas de ${presente.nome}`}
+                  className="w-14 h-11 rounded-xl border-[1.5px] border-[var(--color-border-soft)] bg-white text-center text-xl font-medium text-[var(--color-ink)] tabular-nums focus:outline-none focus:border-[var(--color-champagne-deep)]"
+                />
                 <button
                   type="button"
-                  onClick={() => setQtd((n) => Math.min(restante, n + 1))}
+                  onClick={() => setTexto(String(Math.min(restante, qtd + 1)))}
                   disabled={qtd >= restante}
                   aria-label={`Mais cotas de ${presente.nome}`}
                   className="w-11 h-11 rounded-full border-[1.5px] border-[var(--color-champagne)] bg-white flex items-center justify-center text-[var(--color-ink)] disabled:opacity-40"
@@ -121,6 +136,7 @@ export function CotaGiftCard({
               </div>
               <button
                 type="button"
+                disabled={qtd < 1}
                 onClick={() =>
                   setItem(
                     {
@@ -132,7 +148,7 @@ export function CotaGiftCard({
                     qtd,
                   )
                 }
-                className={`mt-3 w-full inline-flex items-center justify-center gap-1.5 rounded-full py-2.5 px-4 text-[11px] tracking-[0.25em] uppercase font-medium transition-colors ${
+                className={`mt-3 w-full inline-flex items-center justify-center gap-1.5 rounded-full py-2.5 px-4 text-[11px] tracking-[0.25em] uppercase font-medium transition-colors disabled:opacity-50 ${
                   salvo
                     ? "bg-[var(--color-pastel-yellow)] text-[var(--color-ink)]"
                     : "bg-[var(--color-champagne-darker)] text-white hover:bg-[var(--color-champagne-deep)]"
