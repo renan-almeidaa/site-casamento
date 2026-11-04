@@ -40,11 +40,29 @@ export type DemoGiftPurchase = {
   created_at: string;
 };
 
+export type DemoChaRsvp = {
+  id: string;
+  family_id: string;
+  attending_guest_ids: string[];
+  whatsapp: string;
+  gives_pix: boolean;
+  comment: string | null;
+  created_at: string;
+};
+
+export type DemoChaClaim = {
+  item_id: string;
+  response_id: string;
+  created_at: string;
+};
+
 type Store = {
   families: DemoFamily[];
   guests: DemoGuest[];
   rsvp_responses: DemoRsvp[];
   gift_purchases: DemoGiftPurchase[];
+  cha_rsvp_responses: DemoChaRsvp[];
+  cha_gift_claims: DemoChaClaim[];
 };
 
 declare global {
@@ -78,6 +96,8 @@ function seed(): Store {
     ],
     rsvp_responses: [],
     gift_purchases: [],
+    cha_rsvp_responses: [],
+    cha_gift_claims: [],
   };
 }
 
@@ -85,6 +105,9 @@ export function getDemoStore(): Store {
   if (!globalThis.__weddingDemoStore) {
     globalThis.__weddingDemoStore = seed();
   }
+  // Store criado antes do chá existir (hot reload em dev).
+  globalThis.__weddingDemoStore.cha_rsvp_responses ??= [];
+  globalThis.__weddingDemoStore.cha_gift_claims ??= [];
   return globalThis.__weddingDemoStore;
 }
 

@@ -46,6 +46,19 @@ export const WEDDING = {
     process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "5544999999999",
 } as const;
 
+// Chá de casa nova — página privada em /cha/<slug>, sem link no site.
+// Trocar o slug invalida o link antigo.
+export const CHA = {
+  slug: "casa-nova-k7q2",
+  dateLabel: "29 de novembro de 2026",
+  dateShort: "29/11",
+  timeLabel: "14h30",
+  address: "R. Janet Rolin, 587 – Jardim Iguatemi",
+  cep: "86810-001",
+  mapUrl:
+    "https://www.google.com/maps/search/rua+janet+rolin+numero+587+cep/@-23.5773098,-51.4538283,15z",
+} as const;
+
 export const SECTIONS = [
   { id: "inicio", label: "Início" },
   { id: "nossa-historia", label: "Nossa História" },

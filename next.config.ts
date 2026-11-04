@@ -57,6 +57,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/:path*", headers: securityHeaders },
       { source: "/admin/:path*", headers: adminHeaders },
+      // Chá de casa nova: link privado, fora dos buscadores.
+      { source: "/cha/:path*", headers: adminHeaders },
     ];
   },
 };

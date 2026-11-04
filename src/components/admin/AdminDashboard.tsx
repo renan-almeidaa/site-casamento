@@ -16,16 +16,19 @@ import {
   XCircle,
   Clock,
   Loader2,
+  Home,
 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { WEDDING } from "@/lib/wedding-data";
 import { FamiliasManager } from "@/components/admin/FamiliasManager";
 import { RsvpTable } from "@/components/admin/RsvpTable";
 import { GiftPurchasesTable } from "@/components/admin/GiftPurchasesTable";
+import { ChaManager } from "@/components/admin/ChaManager";
+import type { AdminChaResponse } from "@/lib/cha-data";
 import { formatBRL } from "@/lib/utils";
 import type { AdminFamily, AdminRsvp, AdminGiftPurchase } from "@/lib/admin-data";
 
-type Tab = "overview" | "familias" | "rsvp" | "presentes";
+type Tab = "overview" | "familias" | "rsvp" | "presentes" | "cha";
 
 type Stats = {
   totalFamilies: number;
@@ -224,11 +227,41 @@ function PresentesTab() {
   );
 }
 
+function ChaTab() {
+  const [responses, setResponses] = useState<AdminChaResponse[] | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    const res = await fetch("/api/admin/cha");
+    const d = (await res.json()) as { responses?: AdminChaResponse[] };
+    setResponses(d.responses ?? []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
+  if (loading) return <Spinner />;
+
+  return (
+    <div>
+      <header className="mb-8">
+        <p className="label-uppercase mb-1">Link privado</p>
+        <h1 className="heading-display text-3xl md:text-4xl">Chá de Casa Nova</h1>
+        <p className="text-sm text-[var(--color-text-soft)] mt-1">
+          Quem confirmou, quem vai e o que cada família escolheu.
+        </p>
+      </header>
+      <ChaManager responses={responses ?? []} onRefresh={load} />
+    </div>
+  );
+}
+
 const NAV: { id: Tab; label: string; Icon: React.ElementType }[] = [
   { id: "overview", label: "Visão Geral", Icon: LayoutDashboard },
   { id: "familias", label: "Famílias", Icon: Users },
   { id: "rsvp", label: "Respostas RSVP", Icon: ClipboardCheck },
   { id: "presentes", label: "Presentes", Icon: Gift },
+  { id: "cha", label: "Chá de Casa Nova", Icon: Home },
 ];
 
 export function AdminDashboard({ defaultTab = "overview" }: { defaultTab?: Tab }) {
@@ -303,6 +336,7 @@ export function AdminDashboard({ defaultTab = "overview" }: { defaultTab?: Tab }
           {tab === "familias" && <FamiliasTab />}
           {tab === "rsvp" && <RsvpTab />}
           {tab === "presentes" && <PresentesTab />}
+          {tab === "cha" && <ChaTab />}
         </main>
       </div>
     </div>
