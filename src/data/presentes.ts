@@ -25,7 +25,10 @@ export type CategoriaId =
   | "quarto"
   | "sala"
   | "banheiro"
-  | "lavanderia";
+  | "lavanderia"
+  | "casa"
+  | "lua-de-mel"
+  | "primeiros-dias";
 
 export type PastelTone =
   | "rose"
@@ -74,6 +77,102 @@ export const PRESENTES: Presente[] = [
 
   // Itens com preço (do mais barato pro mais caro)
   {
+    id: "cafe-manha",
+    nome: "Café da Manhã Especial",
+    valor: 80,
+    icon: "coffee",
+    pastel: "salmon",
+    categoria: "lua-de-mel",
+  },
+  {
+    id: "noite-pizza",
+    nome: "Noite de Pizza na Casa Nova",
+    valor: 80,
+    icon: "plate",
+    pastel: "yellow",
+    categoria: "primeiros-dias",
+  },
+  {
+    id: "kit-ferramentas",
+    nome: "Kit de Ferramentas",
+    valor: 120,
+    icon: "tray",
+    pastel: "sky",
+    categoria: "casa",
+  },
+  {
+    id: "prateleiras",
+    nome: "Prateleiras",
+    valor: 120,
+    icon: "tray",
+    pastel: "mint",
+    categoria: "sala",
+  },
+  {
+    id: "jantar-romantico",
+    nome: "Jantar Romântico",
+    valor: 150,
+    icon: "dinner",
+    pastel: "rose",
+    categoria: "lua-de-mel",
+  },
+  {
+    id: "compra-mercado",
+    nome: "Primeira Compra de Mercado",
+    valor: 150,
+    icon: "tray",
+    pastel: "mint",
+    categoria: "primeiros-dias",
+  },
+  {
+    id: "escada-domestica",
+    nome: "Escada Doméstica",
+    valor: 150,
+    icon: "home",
+    pastel: "lavender",
+    categoria: "casa",
+  },
+  {
+    id: "ventilador",
+    nome: "Ventilador",
+    valor: 220,
+    icon: "home",
+    pastel: "sky",
+    categoria: "casa",
+  },
+  {
+    id: "passeio-dois",
+    nome: "Passeio a Dois",
+    valor: 250,
+    icon: "honeymoon",
+    pastel: "lavender",
+    categoria: "lua-de-mel",
+  },
+  {
+    id: "montagem-moveis",
+    nome: "Montagem dos Móveis",
+    valor: 250,
+    icon: "home",
+    pastel: "salmon",
+    categoria: "primeiros-dias",
+  },
+  {
+    id: "mesa-cabeceira",
+    nome: "Mesa de Cabeceira",
+    valor: 250,
+    icon: "home",
+    pastel: "yellow",
+    categoria: "quarto",
+  },
+  {
+    id: "furadeira",
+    nome: "Furadeira",
+    valor: 250,
+    icon: "tray",
+    pastel: "rose",
+    categoria: "casa",
+  },
+  {
     id: "chuveiro-eletrico",
     nome: "Chuveiro Elétrico",
     valor: 285,
@@ -81,6 +180,30 @@ export const PRESENTES: Presente[] = [
     icon: "filter",
     pastel: "sky",
     categoria: "banheiro",
+  },
+  {
+    id: "primeiras-contas",
+    nome: "Ajuda com as Primeiras Contas da Casa",
+    valor: 300,
+    icon: "home",
+    pastel: "sky",
+    categoria: "primeiros-dias",
+  },
+  {
+    id: "espelho-corpo",
+    nome: "Espelho de Corpo Inteiro",
+    valor: 300,
+    icon: "home",
+    pastel: "lavender",
+    categoria: "quarto",
+  },
+  {
+    id: "aspirador-po",
+    nome: "Aspirador de Pó",
+    valor: 350,
+    icon: "home",
+    pastel: "mint",
+    categoria: "casa",
   },
   {
     id: "filtro-agua",
@@ -92,13 +215,44 @@ export const PRESENTES: Presente[] = [
     categoria: "cozinha",
   },
   {
-    id: "fogao",
-    nome: "Fogão",
-    valor: 899,
-    imagem: "/fotos-dos-presentes/fogão.png",
-    icon: "pot",
+    id: "diaria-hotel",
+    nome: "Diária de Hotel",
+    valor: 400,
+    icon: "bed",
     pastel: "rose",
+    categoria: "lua-de-mel",
+  },
+  {
+    id: "rack-tv",
+    nome: "Rack para TV",
+    valor: 500,
+    icon: "home",
+    pastel: "salmon",
+    categoria: "sala",
+  },
+  {
+    id: "forno-eletrico",
+    nome: "Forno Elétrico",
+    valor: 500,
+    icon: "fryer",
+    pastel: "yellow",
     categoria: "cozinha",
+  },
+  {
+    id: "ajuda-passagem",
+    nome: "Ajuda na Passagem",
+    valor: 600,
+    icon: "honeymoon",
+    pastel: "sky",
+    categoria: "lua-de-mel",
+  },
+  {
+    id: "comoda",
+    nome: "Cômoda",
+    valor: 600,
+    icon: "home",
+    pastel: "mint",
+    categoria: "quarto",
   },
   {
     id: "guarda-roupa",
@@ -172,5 +326,8 @@ export const CATEGORIAS = [
   { id: "sala", label: "Sala" },
   { id: "banheiro", label: "Banheiro" },
   { id: "lavanderia", label: "Lavanderia" },
+  { id: "casa", label: "Casa" },
+  { id: "lua-de-mel", label: "Lua de Mel" },
+  { id: "primeiros-dias", label: "Primeiros Dias" },
   { id: "contribuicao", label: "Contribuição" },
 ] as const;
