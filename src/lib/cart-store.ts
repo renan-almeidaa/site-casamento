@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { getLote } from "@/data/presentes";
 
 export type CartItem = {
   id: string;
@@ -81,6 +82,20 @@ export const useCartStore = create<CartState>()(
     {
       name: "samara-renan-cart",
       partialize: (state) => ({ items: state.items }),
+      // O carrinho fica salvo no navegador: ao reabrir, o lote assume o nome
+      // e o valor atuais (o servidor recusa lote com valor desatualizado).
+      merge: (persisted, current) => {
+        const saved = (persisted ?? {}) as Partial<CartState>;
+        return {
+          ...current,
+          ...saved,
+          items: (saved.items ?? []).flatMap((it) => {
+            if (!it.isLote) return [it];
+            const lote = getLote(it.id);
+            return lote ? [{ ...it, nome: lote.nome, valor: lote.valor }] : [];
+          }),
+        };
+      },
     },
   ),
 );
