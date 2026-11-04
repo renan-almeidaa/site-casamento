@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, Search } from "lucide-react";
+import { Check, MessageCircle, Search } from "lucide-react";
 import { maskPhone } from "@/lib/utils";
+import { WEDDING } from "@/lib/wedding-data";
 
 export type ChaFamily = {
   id: string;
@@ -35,6 +36,7 @@ export function StepQuemVai({
   const [results, setResults] = useState<ChaFamily[]>([]);
   const [searched, setSearched] = useState(false);
   const [alreadyAnswered, setAlreadyAnswered] = useState(false);
+  const [answeredNames, setAnsweredNames] = useState<string[]>([]);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -54,9 +56,11 @@ export function StepQuemVai({
         const data = (await r.json()) as {
           families: ChaFamily[];
           alreadyAnswered?: boolean;
+          answeredNames?: string[];
         };
         setResults(data.families ?? []);
         setAlreadyAnswered(Boolean(data.alreadyAnswered));
+        setAnsweredNames(data.answeredNames ?? []);
         setSearched(true);
       } catch {
         // silencioso — o convidado pode tentar de novo
@@ -111,12 +115,30 @@ export function StepQuemVai({
             ))}
           </div>
         )}
-        {searched && results.length === 0 && (
+        {searched && results.length === 0 && !alreadyAnswered && (
           <p className="mt-3 text-[14px] text-[var(--color-text-soft)]">
-            {alreadyAnswered
-              ? "Sua família já respondeu 💛 Se precisar mudar algo, fale com Renan ou Samara."
-              : "Não achamos esse nome 🤔 Tente só o primeiro nome."}
+            Não achamos esse nome 🤔 Tente só o primeiro nome.
           </p>
+        )}
+        {searched && results.length === 0 && alreadyAnswered && (
+          <div className="mt-3 rounded-2xl border border-[var(--color-border-soft)] bg-white p-4 text-center">
+            <p className="text-[15px] text-[var(--color-ink)]">
+              Sua família já respondeu 💛
+            </p>
+            <p className="text-[14px] text-[var(--color-text-soft)] mt-1">
+              Quer mudar algo? Fale com a gente:
+            </p>
+            <a
+              href={`https://wa.me/${WEDDING.whatsappNumber}?text=${encodeURIComponent(
+                `Oi Renan! Sou da ${answeredNames[0] ?? "família"} e quero mudar minha resposta do chá de casa nova 😊`,
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center justify-center gap-2 min-h-[52px] w-full rounded-full bg-[#25D366] px-5 text-[15px] font-medium text-white hover:brightness-95"
+            >
+              <MessageCircle size={18} /> Chamar no WhatsApp
+            </a>
+          </div>
         )}
 
         {family && (

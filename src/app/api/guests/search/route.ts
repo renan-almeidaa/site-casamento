@@ -51,6 +51,7 @@ export async function GET(request: Request) {
 
     let familyIds = Array.from(new Set(matching.map((g) => g.family_id)));
     let alreadyAnswered = false;
+    let answeredNames: string[] = [];
     if (forCha) {
       const { data: answered } = await supa
         .from("cha_rsvp_responses")
@@ -59,10 +60,17 @@ export async function GET(request: Request) {
       const done = new Set((answered ?? []).map((r) => r.family_id as string));
       alreadyAnswered = done.size > 0;
       familyIds = familyIds.filter((id) => !done.has(id));
+      if (alreadyAnswered) {
+        const { data: fams } = await supa
+          .from("families")
+          .select("name")
+          .in("id", [...done]);
+        answeredNames = (fams ?? []).map((f) => f.name as string);
+      }
     }
     familyIds = familyIds.slice(0, 6);
     if (familyIds.length === 0) {
-      return NextResponse.json({ families: [], alreadyAnswered });
+      return NextResponse.json({ families: [], alreadyAnswered, answeredNames });
     }
 
     const { data: families } = await supa
@@ -77,7 +85,7 @@ export async function GET(request: Request) {
         .filter((m) => m.family_id === f.id)
         .map((m) => ({ id: m.id, name: m.name, isChild: m.is_child })),
     }));
-    return NextResponse.json({ families: result, alreadyAnswered });
+    return NextResponse.json({ families: result, alreadyAnswered, answeredNames });
   }
 
   // Fallback demo
@@ -92,6 +100,9 @@ export async function GET(request: Request) {
     forCha ? store.cha_rsvp_responses.map((r) => r.family_id) : [],
   );
   const alreadyAnswered = allIds.some((id) => done.has(id));
+  const answeredNames = store.families
+    .filter((f) => allIds.includes(f.id) && done.has(f.id))
+    .map((f) => f.name);
   const familyIds = allIds.filter((id) => !done.has(id)).slice(0, 6);
   const result = familyIds.map((fid) => {
     const f = store.families.find((x) => x.id === fid)!;
@@ -103,5 +114,5 @@ export async function GET(request: Request) {
         .map((g) => ({ id: g.id, name: g.name, isChild: g.is_child })),
     };
   });
-  return NextResponse.json({ families: result, alreadyAnswered });
+  return NextResponse.json({ families: result, alreadyAnswered, answeredNames });
 }

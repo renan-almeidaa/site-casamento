@@ -43,7 +43,7 @@ export const WEDDING = {
       "https://link.mercadopago.com.br/samaraerenan",
   },
   whatsappNumber:
-    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "5544999999999",
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "5543996929387",
 } as const;
 
 // Chá de casa nova — página privada em /cha/<slug>, sem link no site.
