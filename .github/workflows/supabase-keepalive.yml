@@ -1,0 +1,38 @@
+# Mantém o projeto Supabase (free tier) ativo.
+# O Supabase pausa projetos gratuitos após ~7 dias sem atividade; este job
+# faz uma consulta leve no banco todo dia para evitar a pausa.
+#
+# Secrets necessários (Settings → Secrets and variables → Actions):
+#   SUPABASE_URL       → mesmo valor de NEXT_PUBLIC_SUPABASE_URL
+#   SUPABASE_ANON_KEY  → mesmo valor de NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+name: Supabase keepalive
+
+on:
+  schedule:
+    - cron: "0 12 * * *" # todo dia às 12:00 UTC (09:00 em Brasília)
+  workflow_dispatch: # permite rodar manualmente pela aba Actions
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Consulta o banco
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::Secrets SUPABASE_URL e/ou SUPABASE_ANON_KEY não configurados."
+            exit 1
+          fi
+          status=$(curl -s -o response.txt -w "%{http_code}" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            "$SUPABASE_URL/rest/v1/families?select=id&limit=1")
+          echo "HTTP $status"
+          if [ "$status" != "200" ]; then
+            cat response.txt
+            echo "::error::Supabase respondeu HTTP $status — o projeto pode estar pausado."
+            exit 1
+          fi
