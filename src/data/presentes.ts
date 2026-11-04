@@ -145,6 +145,7 @@ export const PRESENTES: Presente[] = [
     id: "comoda",
     nome: "Cômoda",
     valor: 600,
+    imagem: "/fotos-dos-presentes/comoda.jpg",
     icon: "home",
     pastel: "mint",
     categoria: "quarto",
