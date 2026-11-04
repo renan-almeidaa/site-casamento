@@ -114,6 +114,15 @@ export const PRESENTES: Presente[] = [
     categoria: "lua-de-mel",
   },
   {
+    id: "estoque-guloseimas",
+    nome: "Nosso Primeiro Estoque de Guloseimas",
+    valor: 80,
+    imagem: "/fotos-dos-presentes/primeiro-estoque-de-guloseimas.jpg",
+    icon: "heart",
+    pastel: "rose",
+    categoria: "primeiros-dias",
+  },
+  {
     id: "piquenique",
     nome: "Piquenique a Dois",
     valor: 100,
