@@ -34,6 +34,7 @@ export function StepQuemVai({
   const [query, setQuery] = useState(family?.name ?? "");
   const [results, setResults] = useState<ChaFamily[]>([]);
   const [searched, setSearched] = useState(false);
+  const [alreadyAnswered, setAlreadyAnswered] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -46,10 +47,16 @@ export function StepQuemVai({
     }
     timer.current = setTimeout(async () => {
       try {
-        const r = await fetch(`/api/guests/search?q=${encodeURIComponent(q)}`);
+        const r = await fetch(
+          `/api/guests/search?for=cha&q=${encodeURIComponent(q)}`,
+        );
         if (!r.ok) return;
-        const data = (await r.json()) as { families: ChaFamily[] };
+        const data = (await r.json()) as {
+          families: ChaFamily[];
+          alreadyAnswered?: boolean;
+        };
         setResults(data.families ?? []);
+        setAlreadyAnswered(Boolean(data.alreadyAnswered));
         setSearched(true);
       } catch {
         // silencioso — o convidado pode tentar de novo
@@ -106,7 +113,9 @@ export function StepQuemVai({
         )}
         {searched && results.length === 0 && (
           <p className="mt-3 text-[14px] text-[var(--color-text-soft)]">
-            Não achamos esse nome 🤔 Tente só o primeiro nome.
+            {alreadyAnswered
+              ? "Sua família já respondeu 💛 Se precisar mudar algo, fale com Renan ou Samara."
+              : "Não achamos esse nome 🤔 Tente só o primeiro nome."}
           </p>
         )}
 

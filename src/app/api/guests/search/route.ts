@@ -29,6 +29,8 @@ export async function GET(request: Request) {
   if (rawQ.length < 2) return NextResponse.json({ families: [] });
 
   const qNorm = fold(rawQ);
+  // ?for=cha: esconde famílias que já responderam o chá de casa nova.
+  const forCha = searchParams.get("for") === "cha";
 
   const supa = createSupabaseServiceClient();
   if (supa) {
@@ -47,10 +49,21 @@ export async function GET(request: Request) {
     });
     if (matching.length === 0) return NextResponse.json({ families: [] });
 
-    const familyIds = Array.from(new Set(matching.map((g) => g.family_id))).slice(
-      0,
-      6,
-    );
+    let familyIds = Array.from(new Set(matching.map((g) => g.family_id)));
+    let alreadyAnswered = false;
+    if (forCha) {
+      const { data: answered } = await supa
+        .from("cha_rsvp_responses")
+        .select("family_id")
+        .in("family_id", familyIds);
+      const done = new Set((answered ?? []).map((r) => r.family_id as string));
+      alreadyAnswered = done.size > 0;
+      familyIds = familyIds.filter((id) => !done.has(id));
+    }
+    familyIds = familyIds.slice(0, 6);
+    if (familyIds.length === 0) {
+      return NextResponse.json({ families: [], alreadyAnswered });
+    }
 
     const { data: families } = await supa
       .from("families")
@@ -64,7 +77,7 @@ export async function GET(request: Request) {
         .filter((m) => m.family_id === f.id)
         .map((m) => ({ id: m.id, name: m.name, isChild: m.is_child })),
     }));
-    return NextResponse.json({ families: result });
+    return NextResponse.json({ families: result, alreadyAnswered });
   }
 
   // Fallback demo
@@ -74,10 +87,12 @@ export async function GET(request: Request) {
       fold(g.name).includes(qNorm) ||
       g.nicknames.some((n) => fold(n).includes(qNorm)),
   );
-  const familyIds = Array.from(new Set(matching.map((g) => g.family_id))).slice(
-    0,
-    6,
+  const allIds = Array.from(new Set(matching.map((g) => g.family_id)));
+  const done = new Set(
+    forCha ? store.cha_rsvp_responses.map((r) => r.family_id) : [],
   );
+  const alreadyAnswered = allIds.some((id) => done.has(id));
+  const familyIds = allIds.filter((id) => !done.has(id)).slice(0, 6);
   const result = familyIds.map((fid) => {
     const f = store.families.find((x) => x.id === fid)!;
     return {
@@ -88,5 +103,5 @@ export async function GET(request: Request) {
         .map((g) => ({ id: g.id, name: g.name, isChild: g.is_child })),
     };
   });
-  return NextResponse.json({ families: result });
+  return NextResponse.json({ families: result, alreadyAnswered });
 }
