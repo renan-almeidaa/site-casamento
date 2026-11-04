@@ -56,9 +56,11 @@ export type DemoChaClaim = {
   created_at: string;
 };
 
-export type DemoLotClaim = {
-  lot_id: string;
+export type DemoQuotaClaim = {
+  id: string;
+  presente_id: string;
   purchase_id: string;
+  qtd: number;
   created_at: string;
 };
 
@@ -69,7 +71,7 @@ type Store = {
   gift_purchases: DemoGiftPurchase[];
   cha_rsvp_responses: DemoChaRsvp[];
   cha_gift_claims: DemoChaClaim[];
-  gift_lot_claims: DemoLotClaim[];
+  gift_quota_claims: DemoQuotaClaim[];
 };
 
 declare global {
@@ -105,7 +107,7 @@ function seed(): Store {
     gift_purchases: [],
     cha_rsvp_responses: [],
     cha_gift_claims: [],
-    gift_lot_claims: [],
+    gift_quota_claims: [],
   };
 }
 
@@ -116,7 +118,7 @@ export function getDemoStore(): Store {
   // Store criado antes do chá existir (hot reload em dev).
   globalThis.__weddingDemoStore.cha_rsvp_responses ??= [];
   globalThis.__weddingDemoStore.cha_gift_claims ??= [];
-  globalThis.__weddingDemoStore.gift_lot_claims ??= [];
+  globalThis.__weddingDemoStore.gift_quota_claims ??= [];
   return globalThis.__weddingDemoStore;
 }
 

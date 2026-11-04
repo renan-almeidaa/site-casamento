@@ -160,66 +160,91 @@ revoke execute on function submit_cha_rsvp(uuid, uuid[], text, boolean, text, te
 grant execute on function submit_cha_rsvp(uuid, uuid[], text, boolean, text, text[]) to service_role;
 
 -- =====================================================================
--- Lotes dos presentes grandes
+-- Cotas dos presentes grandes
 -- Rode este bloco inteiro no SQL Editor (é idempotente).
 -- =====================================================================
 
--- lot_id como PK garante que cada lote tem um dono só. Apagar o registro
--- do presente libera os lotes dele.
-create table if not exists gift_lot_claims (
-  lot_id text primary key,
+-- Uma linha por presente em cada compra. Apagar a compra libera as cotas.
+create table if not exists gift_quota_claims (
+  id uuid primary key default gen_random_uuid(),
+  presente_id text not null,
   purchase_id uuid not null references gift_purchases(id) on delete cascade,
-  created_at timestamptz default now()
+  qtd int not null check (qtd > 0),
+  created_at timestamptz default now(),
+  unique (presente_id, purchase_id)
 );
-create index if not exists gift_lot_claims_purchase_idx on gift_lot_claims(purchase_id);
+create index if not exists gift_quota_claims_presente_idx on gift_quota_claims(presente_id);
+create index if not exists gift_quota_claims_purchase_idx on gift_quota_claims(purchase_id);
 
-alter table gift_lot_claims enable row level security;
+alter table gift_quota_claims enable row level security;
 
-drop policy if exists "admin all on gift_lot_claims" on gift_lot_claims;
-create policy "admin all on gift_lot_claims" on gift_lot_claims
+drop policy if exists "admin all on gift_quota_claims" on gift_quota_claims;
+create policy "admin all on gift_quota_claims" on gift_quota_claims
   for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 
--- Grava o presente + lotes numa transação só. Se outra pessoa pegou algum
--- lote, nada é gravado e a função devolve quais já têm dono. p_previous_id é
+-- Grava o presente + cotas numa transação só. A trava por presente garante
+-- que a soma nunca passa do total; se faltar cota, nada é gravado e a função
+-- devolve quanto resta. p_cotas = [{presente_id, qtd, total}]. p_previous_id é
 -- o registro anterior da mesma sessão (convidado voltou e reenviou).
-create or replace function register_gift_purchase(
+create or replace function register_gift_with_quotas(
   p_buyer_name text,
   p_buyer_whatsapp text,
   p_items jsonb,
   p_total numeric,
   p_payment_method text,
-  p_lot_ids text[],
+  p_cotas jsonb,
   p_previous_id uuid
 ) returns json
 language plpgsql
 as $$
 declare
   v_id uuid;
+  v_short jsonb := '[]'::jsonb;
+  v_usado int;
+  r record;
 begin
   begin
+    perform pg_advisory_xact_lock(hashtext(x.presente_id))
+    from (
+      select distinct presente_id
+      from jsonb_to_recordset(p_cotas) as c(presente_id text)
+      order by presente_id
+    ) x;
+
     if p_previous_id is not null then
       delete from gift_purchases where id = p_previous_id and status = 'aguardando';
+    end if;
+
+    for r in select * from jsonb_to_recordset(p_cotas) as c(presente_id text, qtd int, total int) loop
+      select coalesce(sum(qtd), 0) into v_usado from gift_quota_claims where presente_id = r.presente_id;
+      if v_usado + r.qtd > r.total then
+        v_short := v_short || jsonb_build_object('presente_id', r.presente_id, 'restante', r.total - v_usado);
+      end if;
+    end loop;
+
+    if jsonb_array_length(v_short) > 0 then
+      raise exception 'cotas_insuficientes' using errcode = 'QU001';
     end if;
 
     insert into gift_purchases (buyer_name, buyer_whatsapp, items, total, payment_method, status)
     values (p_buyer_name, p_buyer_whatsapp, p_items, p_total, p_payment_method, 'aguardando')
     returning id into v_id;
 
-    insert into gift_lot_claims (lot_id, purchase_id)
-    select unnest(p_lot_ids), v_id;
-  exception when unique_violation then
-    return json_build_object(
-      'ok', false,
-      'taken', (select coalesce(json_agg(lot_id), '[]'::json)
-                from gift_lot_claims
-                where lot_id = any(p_lot_ids)
-                  and purchase_id is distinct from p_previous_id)
-    );
+    insert into gift_quota_claims (presente_id, purchase_id, qtd)
+    select c.presente_id, v_id, c.qtd
+    from jsonb_to_recordset(p_cotas) as c(presente_id text, qtd int);
+  exception when sqlstate 'QU001' then
+    return json_build_object('ok', false, 'short', v_short);
   end;
   return json_build_object('ok', true, 'id', v_id);
 end;
 $$;
 
 -- Só o servidor (service role) pode chamar a função.
-revoke execute on function register_gift_purchase(text, text, jsonb, numeric, text, text[], uuid) from public, anon, authenticated;
-grant execute on function register_gift_purchase(text, text, jsonb, numeric, text, text[], uuid) to service_role;
+revoke execute on function register_gift_with_quotas(text, text, jsonb, numeric, text, jsonb, uuid) from public, anon, authenticated;
+grant execute on function register_gift_with_quotas(text, text, jsonb, numeric, text, jsonb, uuid) to service_role;
+
+-- Formato antigo (lotes numerados).
+-- CLEANUP
+drop function if exists register_gift_purchase(text, text, jsonb, numeric, text, text[], uuid);
+drop table if exists gift_lot_claims;

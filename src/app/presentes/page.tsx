@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Heart, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PRESENTES, CATEGORIAS, temLotes } from "@/data/presentes";
+import { PRESENTES, CATEGORIAS, temCotas } from "@/data/presentes";
 import { GiftCard } from "@/components/presentes/GiftCard";
-import { LotGiftCard } from "@/components/presentes/LotGiftCard";
+import { CotaGiftCard } from "@/components/presentes/CotaGiftCard";
 import { CartDrawer } from "@/components/presentes/CartDrawer";
 import { CartFab } from "@/components/presentes/CartFab";
 import { Ornament } from "@/components/ui/ornament";
@@ -14,14 +14,14 @@ import { Footer } from "@/components/layout/Footer";
 
 export default function PresentesPage() {
   const [cat, setCat] = useState<string>("todos");
-  const [takenLots, setTakenLots] = useState<Set<string>>(new Set());
+  const [usedQuotas, setUsedQuotas] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    fetch("/api/presentes/lotes", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : { taken: [] }))
-      .then((d: { taken: string[] }) => setTakenLots(new Set(d.taken)))
+    fetch("/api/presentes/cotas", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : { used: {} }))
+      .then((d: { used: Record<string, number> }) => setUsedQuotas(d.used))
       .catch(() => {
-        // silencioso — o servidor recusa lote já escolhido na hora de registrar
+        // silencioso — o servidor recusa cota indisponível na hora de registrar
       });
   }, []);
 
@@ -89,7 +89,7 @@ export default function PresentesPage() {
             ))}
           </div>
 
-          {filtered.some(temLotes) && (
+          {filtered.some(temCotas) && (
             <div className="max-w-2xl mx-auto mb-8 flex items-start gap-3 text-sm sm:text-[15px] leading-relaxed text-[var(--color-text)]">
               <Users
                 size={17}
@@ -98,11 +98,11 @@ export default function PresentesPage() {
               />
               <p>
                 <span className="font-medium text-[var(--color-ink)]">
-                  Presentes em lotes:
+                  Presentes em cotas:
                 </span>{" "}
-                os presentes maiores foram divididos em 5 lotes, assim várias
-                pessoas podem participar do mesmo presente. Escolha um ou mais
-                lotes. Os riscados já têm dono 💛
+                os presentes maiores foram divididos em cotas de R$ 100, assim
+                várias pessoas podem participar do mesmo presente. Escolha
+                quantas cotas quiser 💛
               </p>
             </div>
           )}
@@ -121,8 +121,8 @@ export default function PresentesPage() {
                   exit={{ opacity: 0, y: 12 }}
                   transition={{ duration: 0.3 }}
                 >
-                  {temLotes(p) ? (
-                    <LotGiftCard presente={p} taken={takenLots} />
+                  {temCotas(p) ? (
+                    <CotaGiftCard presente={p} used={usedQuotas[p.id] ?? 0} />
                   ) : (
                     <GiftCard presente={p} />
                   )}

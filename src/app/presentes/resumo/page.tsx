@@ -11,7 +11,7 @@ import { useToast } from "@/components/ui/toaster";
 
 export default function ResumoPage() {
   const router = useRouter();
-  const { items, total, count, remove } = useCartStore();
+  const { items, total, count, remove, setItem } = useCartStore();
   const { toast } = useToast();
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -74,7 +74,27 @@ export default function ResumoPage() {
         id?: string;
         error?: string;
         takenItemIds?: string[];
+        short?: { id: string; restante: number }[];
       };
+      // Outra pessoa escolheu as cotas nesse meio tempo: ajusta o carrinho.
+      if (r.status === 409 && data.short) {
+        const avisos = data.short.map(({ id, restante }) => {
+          const item = items.find((it) => it.id === id);
+          const nome = item?.nome.replace(/ \(cota.*$/, "") ?? "esse presente";
+          if (restante === 0) {
+            remove(id);
+            return `${nome} já foi completado`;
+          }
+          if (item) setItem(item, restante);
+          return `${nome} só tem mais ${restante} ${restante === 1 ? "cota" : "cotas"}`;
+        });
+        useCartStore.getState().close();
+        if (useCartStore.getState().items.length === 0) {
+          toast("Esse presente acabou de ser completado");
+        }
+        setError(`Ops! ${avisos.join("; ")}. Ajustamos seu carrinho 😅`);
+        return;
+      }
       if (r.status === 409 && data.takenItemIds) {
         const nomes = items
           .filter((it) => data.takenItemIds!.includes(it.id))
@@ -83,10 +103,10 @@ export default function ResumoPage() {
         data.takenItemIds.forEach((id) => remove(id));
         // Carrinho vazio volta para a lista, onde o aviso abaixo não aparece.
         if (items.every((it) => data.takenItemIds!.includes(it.id))) {
-          toast("Esse lote acabou de ser escolhido");
+          toast("Esse item não está mais disponível");
         }
         setError(
-          `Ops! Alguém escolheu agora há pouco: ${nomes}. Tiramos do seu carrinho 😅`,
+          `Ops! ${nomes} mudou. Tiramos do seu carrinho, é só escolher de novo 😅`,
         );
         return;
       }

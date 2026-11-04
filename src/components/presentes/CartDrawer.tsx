@@ -94,7 +94,11 @@ export function CartDrawer() {
                           )}
                         </p>
                       </div>
-                      {!it.isLote && (
+                      {it.isCota ? (
+                        <span className="text-sm text-[var(--color-text-soft)] whitespace-nowrap">
+                          {it.qtd} {it.qtd === 1 ? "cota" : "cotas"}
+                        </span>
+                      ) : (
                       <div className="flex items-center gap-1">
                         <button
                           type="button"

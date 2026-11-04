@@ -4,8 +4,15 @@ import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { getDemoStore, newId } from "@/lib/demo-store";
 import { sendBrevoEmail, getNotificationEmails } from "@/lib/brevo";
 import { GiftPurchaseEmail } from "@/emails/GiftPurchaseEmail";
-import { PRESENTES, getLote, temLotes } from "@/data/presentes";
-import { registerGiftWithLots } from "@/lib/gift-lots";
+import {
+  PRESENTES,
+  VALOR_COTA,
+  cotaItemId,
+  getPresenteDaCota,
+  temCotas,
+  totalCotas,
+} from "@/data/presentes";
+import { registerGiftWithQuotas } from "@/lib/gift-quotas";
 import {
   rateLimit,
   getClientIp,
@@ -76,47 +83,63 @@ export async function POST(request: Request) {
   }
   const data = parsed.data;
 
-  // Presente grande só pode ser comprado em lote. Carrinho antigo com o
-  // presente inteiro cai aqui e o item é retirado pelo cliente.
-  const inteiros = data.items
-    .filter((it) => PRESENTES.some((p) => p.id === it.id && temLotes(p)))
+  // Presente grande só entra em cotas. Carrinho antigo (presente inteiro ou
+  // lote do formato anterior) cai aqui e o item é retirado pelo cliente.
+  const antigos = data.items
+    .filter(
+      (it) =>
+        it.id.includes("--lote-") ||
+        PRESENTES.some((p) => p.id === it.id && temCotas(p)),
+    )
     .map((it) => it.id);
-  if (inteiros.length > 0) {
+  if (antigos.length > 0) {
     return NextResponse.json(
-      { error: "taken", takenItemIds: inteiros },
+      { error: "taken", takenItemIds: antigos },
       { status: 409 },
     );
   }
 
-  const lotItems = data.items.filter((it) => it.id.includes("--lote-"));
-  for (const it of lotItems) {
-    const lote = getLote(it.id);
-    if (!lote || it.qtd !== 1 || it.valor !== lote.valor) {
-      return NextResponse.json({ error: "Lote inválido" }, { status: 400 });
+  const cotaItems = data.items.filter((it) => it.id.endsWith("--cotas"));
+  const cotas: { presente_id: string; qtd: number; total: number }[] = [];
+  for (const it of cotaItems) {
+    const presente = getPresenteDaCota(it.id);
+    if (!presente || it.valor !== VALOR_COTA || it.qtd > totalCotas(presente)) {
+      return NextResponse.json({ error: "Cota inválida" }, { status: 400 });
     }
+    cotas.push({
+      presente_id: presente.id,
+      qtd: it.qtd,
+      total: totalCotas(presente),
+    });
   }
 
   const supa = createSupabaseServiceClient();
   let purchaseId: string;
-  if (lotItems.length > 0 || data.previousPurchaseId) {
+  if (cotas.length > 0 || data.previousPurchaseId) {
     let result;
     try {
-      result = await registerGiftWithLots({
+      result = await registerGiftWithQuotas({
         buyerName: data.buyerName,
         buyerWhatsapp: data.buyerWhatsapp,
         items: data.items,
         total: data.total,
         paymentMethod: data.paymentMethod,
-        lotIds: lotItems.map((it) => it.id),
+        cotas,
         previousId: data.previousPurchaseId ?? null,
       });
     } catch (err) {
-      console.error("[Presente] Erro ao gravar com lotes", err);
+      console.error("[Presente] Erro ao gravar com cotas", err);
       return NextResponse.json({ error: "Erro ao gravar" }, { status: 500 });
     }
     if (!result.ok) {
       return NextResponse.json(
-        { error: "taken", takenItemIds: result.taken },
+        {
+          error: "cotas",
+          short: result.short.map((s) => ({
+            id: cotaItemId(s.presente_id),
+            restante: Math.max(0, s.restante),
+          })),
+        },
         { status: 409 },
       );
     }

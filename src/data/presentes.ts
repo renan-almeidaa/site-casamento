@@ -99,7 +99,7 @@ export const PRESENTES: Presente[] = [
   {
     id: "lava-seca",
     nome: "Lava e Seca",
-    valor: 3453,
+    valor: 3500,
     imagem: "/fotos-dos-presentes/lava e seca.png",
     icon: "home",
     pastel: "lavender",
@@ -484,32 +484,26 @@ export const PRESENTES: Presente[] = [
   },
 ];
 
-// Presentes acima deste valor são divididos em lotes: várias pessoas
-// participam do mesmo presente, e cada lote tem um dono só.
-export const VALOR_MINIMO_LOTES = 1000;
-export const LOTES_POR_PRESENTE = 5;
+// Presentes acima deste valor são divididos em cotas: várias pessoas
+// participam do mesmo presente. O valor deles precisa ser múltiplo da cota.
+export const VALOR_MINIMO_COTAS = 1000;
+export const VALOR_COTA = 100;
 
-export const temLotes = (p: Presente) => p.valor > VALOR_MINIMO_LOTES;
+export const temCotas = (p: Presente) => p.valor > VALOR_MINIMO_COTAS;
 
-export const valorDoLote = (p: Presente) =>
-  Math.round((p.valor * 100) / LOTES_POR_PRESENTE) / 100;
+export const totalCotas = (p: Presente) => Math.floor(p.valor / VALOR_COTA);
 
-export const loteId = (presenteId: string, numero: number) =>
-  `${presenteId}--lote-${numero}`;
+// No carrinho, as cotas são um item com qtd = número de cotas.
+export const cotaItemId = (presenteId: string) => `${presenteId}--cotas`;
 
-export function getLote(id: string) {
-  const m = /^(.+)--lote-(\d+)$/.exec(id);
+export const cotaNome = (p: Presente) =>
+  `${p.nome} (cota de R$ ${VALOR_COTA})`;
+
+export function getPresenteDaCota(itemId: string) {
+  const m = /^(.+)--cotas$/.exec(itemId);
   if (!m) return undefined;
   const presente = PRESENTES.find((p) => p.id === m[1]);
-  const numero = Number(m[2]);
-  if (!presente || !temLotes(presente)) return undefined;
-  if (numero < 1 || numero > LOTES_POR_PRESENTE) return undefined;
-  return {
-    id,
-    numero,
-    nome: `${presente.nome} — Lote ${numero} de ${LOTES_POR_PRESENTE}`,
-    valor: valorDoLote(presente),
-  };
+  return presente && temCotas(presente) ? presente : undefined;
 }
 
 export const CATEGORIAS = [

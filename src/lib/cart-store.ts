@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { getLote } from "@/data/presentes";
+import { cotaNome, getPresenteDaCota, VALOR_COTA } from "@/data/presentes";
 
 export type CartItem = {
   id: string;
@@ -10,13 +10,14 @@ export type CartItem = {
   valor: number;
   qtd: number;
   isCustomValue?: boolean;
-  isLote?: boolean;
+  isCota?: boolean;
 };
 
 type CartState = {
   items: CartItem[];
   isOpen: boolean;
   addItem: (item: Omit<CartItem, "qtd">) => void;
+  setItem: (item: Omit<CartItem, "qtd">, qtd: number) => void;
   updateValue: (id: string, valor: number) => void;
   increment: (id: string) => void;
   decrement: (id: string) => void;
@@ -50,6 +51,13 @@ export const useCartStore = create<CartState>()(
             isOpen: true,
           };
         }),
+      setItem: (item, qtd) =>
+        set((state) => ({
+          items: state.items.some((i) => i.id === item.id)
+            ? state.items.map((i) => (i.id === item.id ? { ...i, qtd } : i))
+            : [...state.items, { ...item, qtd }],
+          isOpen: true,
+        })),
       updateValue: (id, valor) =>
         set((state) => ({
           items: state.items.map((i) =>
@@ -82,17 +90,19 @@ export const useCartStore = create<CartState>()(
     {
       name: "samara-renan-cart",
       partialize: (state) => ({ items: state.items }),
-      // O carrinho fica salvo no navegador: ao reabrir, o lote assume o nome
-      // e o valor atuais (o servidor recusa lote com valor desatualizado).
+      // O carrinho fica salvo no navegador: ao reabrir, a cota assume o nome e
+      // o valor atuais, e os lotes do formato antigo saem do carrinho.
       merge: (persisted, current) => {
         const saved = (persisted ?? {}) as Partial<CartState>;
         return {
           ...current,
           ...saved,
           items: (saved.items ?? []).flatMap((it) => {
-            if (!it.isLote) return [it];
-            const lote = getLote(it.id);
-            return lote ? [{ ...it, nome: lote.nome, valor: lote.valor }] : [];
+            if (it.id.includes("--lote-")) return [];
+            const presente = getPresenteDaCota(it.id);
+            return presente
+              ? [{ ...it, nome: cotaNome(presente), valor: VALOR_COTA }]
+              : [it];
           }),
         };
       },

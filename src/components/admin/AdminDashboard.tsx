@@ -24,8 +24,8 @@ import { FamiliasManager } from "@/components/admin/FamiliasManager";
 import { RsvpTable } from "@/components/admin/RsvpTable";
 import { GiftPurchasesTable } from "@/components/admin/GiftPurchasesTable";
 import { ChaManager } from "@/components/admin/ChaManager";
-import { LotesManager } from "@/components/admin/LotesManager";
-import type { AdminLotClaim } from "@/lib/gift-lots";
+import { CotasManager } from "@/components/admin/CotasManager";
+import type { AdminQuotaClaim } from "@/lib/gift-quotas";
 import type { AdminChaResponse } from "@/lib/cha-data";
 import { formatBRL } from "@/lib/utils";
 import type { AdminFamily, AdminRsvp, AdminGiftPurchase } from "@/lib/admin-data";
@@ -201,19 +201,19 @@ function RsvpTab() {
 
 function PresentesTab() {
   const [purchases, setPurchases] = useState<AdminGiftPurchase[] | null>(null);
-  const [claims, setClaims] = useState<AdminLotClaim[]>([]);
+  const [claims, setClaims] = useState<AdminQuotaClaim[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [res, lotes] = await Promise.all([
+    const [res, cotas] = await Promise.all([
       fetch("/api/admin/gift-purchases"),
-      fetch("/api/admin/lotes"),
+      fetch("/api/admin/cotas"),
     ]);
     const d = await res.json() as { purchases: AdminGiftPurchase[] };
-    const l = await lotes.json() as { claims?: AdminLotClaim[] };
+    const c = await cotas.json() as { claims?: AdminQuotaClaim[] };
     setPurchases(d.purchases);
-    setClaims(l.claims ?? []);
+    setClaims(c.claims ?? []);
     setLoading(false);
   }, []);
 
@@ -230,7 +230,7 @@ function PresentesTab() {
           Lista dos presentes registrados pelos convidados. Marque como confirmado quando o comprovante chegar.
         </p>
       </header>
-      <LotesManager claims={claims} onRefresh={load} />
+      <CotasManager claims={claims} onRefresh={load} />
       <GiftPurchasesTable purchases={purchases ?? []} onRefresh={load} />
     </div>
   );
