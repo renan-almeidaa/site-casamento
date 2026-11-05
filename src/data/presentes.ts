@@ -203,14 +203,6 @@ export const PRESENTES: Presente[] = [
     categoria: "quarto",
   },
   {
-    id: "furadeira",
-    nome: "Furadeira",
-    valor: 250,
-    icon: "tray",
-    pastel: "rose",
-    categoria: "casa",
-  },
-  {
     id: "kit-ferramentas",
     nome: "Kit de Ferramentas",
     valor: 200,
@@ -226,6 +218,15 @@ export const PRESENTES: Presente[] = [
     imagem: "/fotos-dos-presentes/aspirador-de-po.webp",
     icon: "home",
     pastel: "mint",
+    categoria: "casa",
+  },
+  {
+    id: "furadeira",
+    nome: "Furadeira",
+    valor: 170,
+    imagem: "/fotos-dos-presentes/furadeira.webp",
+    icon: "tray",
+    pastel: "rose",
     categoria: "casa",
   },
   {
