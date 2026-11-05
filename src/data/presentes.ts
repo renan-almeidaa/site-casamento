@@ -262,6 +262,7 @@ export const PRESENTES: Presente[] = [
     id: "prateleiras",
     nome: "Prateleiras",
     valor: 120,
+    imagem: "/fotos-dos-presentes/prateleiras.jpg",
     icon: "tray",
     pastel: "mint",
     categoria: "sala",
