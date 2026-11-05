@@ -164,7 +164,7 @@ Botão grande champagne **"Confirmar Presença"** que abre um **modal/sheet** co
 - Pergunta "Você irá ao casamento?" (Sim / Não) — radio.
 - Busca por nome (autocomplete) → carrega o **grupo familiar** correspondente do banco.
 - Lista de membros do grupo com checkbox (todos pré-marcados se "Sim", para o convidado desmarcar quem não vai).
-- Telefone (obrigatório), email (obrigatório), comentário (opcional, com placeholder dinâmico baseado em Sim/Não).
+- Telefone (obrigatório), comentário (opcional, com placeholder dinâmico baseado em Sim/Não).
 - Submit envia para `POST /api/rsvp` (Route Handler), que:
   1. Persiste no Supabase (`rsvp_responses`).
   2. Envia email via Brevo para `renangada@gmail.com` com todos os campos preenchidos (template em React Email).
@@ -290,7 +290,7 @@ create table rsvp_responses (
   confirmed boolean not null,        -- true = vai, false = não vai
   attending_guest_ids uuid[] not null,
   phone text not null,
-  email text not null,
+  email text,                        -- legado: o RSVP não pede mais email
   comment text,
   created_at timestamptz default now()
 );
