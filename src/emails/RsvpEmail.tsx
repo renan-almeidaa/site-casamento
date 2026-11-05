@@ -18,7 +18,6 @@ type Props = {
   totalAdults: number;
   totalChildren: number;
   phone: string;
-  email: string;
   comment?: string | null;
 };
 
@@ -30,7 +29,6 @@ export function RsvpEmail({
   totalAdults,
   totalChildren,
   phone,
-  email,
   comment,
 }: Props) {
   return (
@@ -79,7 +77,6 @@ export function RsvpEmail({
           <Section>
             <Text style={label}>Contato</Text>
             <Text style={value}>📞 {phone}</Text>
-            <Text style={value}>✉️ {email}</Text>
           </Section>
           {comment && (
             <>

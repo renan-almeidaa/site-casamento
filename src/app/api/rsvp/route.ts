@@ -23,7 +23,6 @@ const schema = z.object({
   // Frontend já mostra um confirm() antes de submeter caso esteja vazio.
   attendingGuestIds: z.array(idSchema).max(30),
   phone: z.string().min(8).max(30),
-  email: z.string().email().max(254),
   comment: z.string().max(1000).optional().nullable(),
 });
 
@@ -35,7 +34,6 @@ async function sendNotification(payload: {
   totalAdults: number;
   totalChildren: number;
   phone: string;
-  email: string;
   comment?: string | null;
 }) {
   const result = await sendBrevoEmail({
@@ -131,7 +129,6 @@ export async function POST(request: Request) {
       confirmed,
       attending_guest_ids: data.attendingGuestIds,
       phone: data.phone,
-      email: data.email,
       comment: data.comment ?? null,
     });
     if (error) {
@@ -147,7 +144,6 @@ export async function POST(request: Request) {
       totalAdults: attending.filter((m) => !m.is_child).length,
       totalChildren: attending.filter((m) => m.is_child).length,
       phone: data.phone,
-      email: data.email,
       comment: data.comment,
     });
     return NextResponse.json({ ok: true });
@@ -183,7 +179,6 @@ export async function POST(request: Request) {
     confirmed,
     attending_guest_ids: data.attendingGuestIds,
     phone: data.phone,
-    email: data.email,
     comment: data.comment ?? null,
     created_at: new Date().toISOString(),
   });
@@ -196,7 +191,6 @@ export async function POST(request: Request) {
     totalAdults: attending.filter((m) => !m.is_child).length,
     totalChildren: attending.filter((m) => m.is_child).length,
     phone: data.phone,
-    email: data.email,
     comment: data.comment,
   });
 

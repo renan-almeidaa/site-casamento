@@ -26,7 +26,6 @@ export type AdminRsvp = {
   attendingNames: string[];
   notAttendingNames: string[];
   phone: string;
-  email: string;
   comment: string | null;
   createdAt: string;
 };
@@ -118,7 +117,7 @@ export async function listRsvps(): Promise<AdminRsvp[]> {
     const { data: responses } = await supa
       .from("rsvp_responses")
       .select(
-        "id, family_id, confirmed, attending_guest_ids, phone, email, comment, created_at",
+        "id, family_id, confirmed, attending_guest_ids, phone, comment, created_at",
       )
       .order("created_at", { ascending: false });
     if (!responses?.length) return [];
@@ -152,7 +151,6 @@ export async function listRsvps(): Promise<AdminRsvp[]> {
         attendingNames,
         notAttendingNames,
         phone: r.phone,
-        email: r.email,
         comment: r.comment,
         createdAt: r.created_at,
       };
@@ -182,7 +180,6 @@ export async function listRsvps(): Promise<AdminRsvp[]> {
         attendingNames,
         notAttendingNames,
         phone: r.phone,
-        email: r.email,
         comment: r.comment,
         createdAt: r.created_at,
       };

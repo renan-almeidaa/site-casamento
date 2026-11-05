@@ -24,7 +24,6 @@ export type DemoRsvp = {
   confirmed: boolean;
   attending_guest_ids: string[];
   phone: string;
-  email: string;
   comment: string | null;
   created_at: string;
 };

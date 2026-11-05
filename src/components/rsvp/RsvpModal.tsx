@@ -30,7 +30,6 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
   const [family, setFamily] = useState<GuestSearchFamily | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
   const [comment, setComment] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submittedAsConfirmed, setSubmittedAsConfirmed] = useState(true);
@@ -60,7 +59,6 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
         setFamily(null);
         setSelected(new Set());
         setPhone("");
-        setEmail("");
         setComment("");
         setError(null);
         setSubmittedAsConfirmed(true);
@@ -120,8 +118,8 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
       setError("Pesquise e selecione seu nome na lista.");
       return;
     }
-    if (!phone.trim() || !email.trim()) {
-      setError("Telefone e e-mail são obrigatórios.");
+    if (!phone.trim()) {
+      setError("O telefone é obrigatório.");
       return;
     }
     // Se há algum membro desmarcado, força double-check antes de enviar.
@@ -144,7 +142,6 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
           familyId: family.id,
           attendingGuestIds: Array.from(selected),
           phone,
-          email,
           comment,
         }),
       });
@@ -335,7 +332,7 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
                     )}
                   </div>
 
-                  <div className="card-soft p-5 grid sm:grid-cols-2 gap-4">
+                  <div className="card-soft p-5">
                     <div>
                       <p className="text-sm font-medium text-[var(--color-ink)] mb-2">
                         Telefone <span className="text-[var(--color-champagne)]">*</span>
@@ -347,18 +344,6 @@ export function RsvpModal({ open, onClose }: RsvpModalProps) {
                         placeholder="(44) 99999-9999"
                         className="input-soft"
                         inputMode="tel"
-                      />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-[var(--color-ink)] mb-2">
-                        E-mail <span className="text-[var(--color-champagne)]">*</span>
-                      </p>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="seu@email.com"
-                        className="input-soft"
                       />
                     </div>
                   </div>

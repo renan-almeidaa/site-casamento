@@ -34,11 +34,13 @@ create table if not exists rsvp_responses (
   confirmed boolean not null,
   attending_guest_ids uuid[] not null,
   phone text not null,
-  email text not null,
+  email text, -- legado: o RSVP não pede mais email
   comment text,
   created_at timestamptz default now()
 );
 create index if not exists rsvp_family_idx on rsvp_responses(family_id);
+-- Migration para bancos já existentes (idempotente):
+alter table rsvp_responses alter column email drop not null;
 create index if not exists rsvp_created_idx on rsvp_responses(created_at desc);
 
 -- Compras de presentes

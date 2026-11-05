@@ -90,7 +90,6 @@ export function RsvpTable({
       list = list.filter(
         (r) =>
           r.familyName.toLowerCase().includes(qq) ||
-          r.email.toLowerCase().includes(qq) ||
           r.attendingNames.some((n) => n.toLowerCase().includes(qq)) ||
           r.notAttendingNames.some((n) => n.toLowerCase().includes(qq)),
       );
@@ -106,7 +105,6 @@ export function RsvpTable({
       "Vão",
       "Não vão",
       "Telefone",
-      "Email",
       "Comentário",
     ];
     const rows = filtered.map((r) => [
@@ -116,7 +114,6 @@ export function RsvpTable({
       r.attendingNames.join("; "),
       r.notAttendingNames.join("; "),
       r.phone,
-      r.email,
       r.comment ?? "",
     ]);
     const csv = [header, ...rows]
@@ -149,7 +146,7 @@ export function RsvpTable({
             type="text"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar por nome, família ou email..."
+            placeholder="Buscar por nome ou família..."
             className="input-soft"
             style={{ paddingLeft: "2.25rem" }}
           />
@@ -262,12 +259,6 @@ export function RsvpTable({
                         className="block text-[var(--color-champagne-deep)] hover:underline"
                       >
                         {r.phone}
-                      </a>
-                      <a
-                        href={`mailto:${r.email}`}
-                        className="block text-[var(--color-text-soft)] hover:underline truncate max-w-[180px]"
-                      >
-                        {r.email}
                       </a>
                     </td>
                     <td className="px-4 py-3 text-xs italic text-[var(--color-text-soft)] max-w-[260px]">
