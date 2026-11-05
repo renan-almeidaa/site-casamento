@@ -485,6 +485,7 @@ export const PRESENTES: Presente[] = [
     id: "diaria-hotel",
     nome: "Diária de Hotel",
     valor: 400,
+    imagem: "/fotos-dos-presentes/diaria-de-hotel.jpg",
     icon: "bed",
     pastel: "rose",
     categoria: "lua-de-mel",
