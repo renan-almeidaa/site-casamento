@@ -74,6 +74,10 @@ export function StepPresentes({ chosen, onToggle, taken, givesPix, onTogglePix }
         <span className="text-[13px]">ou escolha itens para a casa</span>
         <span className="flex-1 h-px bg-[var(--color-border-soft)]" />
       </div>
+      <p className="-mt-3 text-center text-[14px] text-[var(--color-text-soft)]">
+        Os itens <span className="line-through decoration-[var(--color-champagne-deep)] decoration-2">riscados</span>{" "}
+        já foram escolhidos por alguém 💛
+      </p>
 
       {/* Atalhos por cômodo */}
       <div className="sticky top-0 z-30 -mx-5 px-5 py-2.5 bg-[var(--color-cream)]/95 backdrop-blur border-b border-[var(--color-border-soft)]">
