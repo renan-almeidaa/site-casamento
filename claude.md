@@ -40,7 +40,7 @@ Site one-page (com rotas auxiliares para RSVP/admin/presentes) para o casamento 
 | Estado do carrinho | **Zustand** + `persist` em localStorage | Simples, sem boilerplate |
 | Banco de dados | **Supabase (Postgres)** | Free tier generoso, ótimo SDK, integra com Auth |
 | Auth admin | **Supabase Auth** (email + senha) | Apenas Renan e Samara cadastrados manualmente no painel Supabase |
-| Email transacional | **Brevo** (HTTP API) + React Email templates | Free tier 300 emails/dia, sem SDK extra (usa `fetch` + `@react-email/components` render) |
+| Email transacional | **Gmail** (Nodemailer + senha de app) + React Email templates | Sem bloqueio por IP nem domínio verificado; aceita mais de um destinatário |
 | Validação | **Zod** | Compartilhada entre client e server |
 | Formulários | **React Hook Form** + `@hookform/resolvers/zod` | Padrão do ecossistema |
 | Deploy | **Netlify** (usuário fará manualmente após push no GitHub) | — |
@@ -167,7 +167,7 @@ Botão grande champagne **"Confirmar Presença"** que abre um **modal/sheet** co
 - Telefone (obrigatório), comentário (opcional, com placeholder dinâmico baseado em Sim/Não).
 - Submit envia para `POST /api/rsvp` (Route Handler), que:
   1. Persiste no Supabase (`rsvp_responses`).
-  2. Envia email via Brevo para `renangada@gmail.com` com todos os campos preenchidos (template em React Email).
+  2. Envia email via Gmail para `renangada@gmail.com` com todos os campos preenchidos (template em React Email).
   3. Retorna sucesso → modal mostra overlay de agradecimento (mesma copy do HTML — 💍 / 🙏).
 
 ### 5.8. Lista de Presentes (CTA + link)
@@ -254,7 +254,7 @@ Em ambas as abas: rodapé com `ENVIAR COMPROVANTE` (WhatsApp) e `← Voltar`.
 
 **Antes** de redirecionar para o pagamento (PIX ou cartão), enviar `POST /api/presentes/registrar` com `{ nome, whatsapp, itens: [{id, nome, valor, qtd}], total, metodo }`. Backend:
 1. Persiste em `gift_purchases` no Supabase.
-2. Envia email para `renangada@gmail.com` via Brevo: *"Novo presente registrado por [Nome] – R$ XX,XX – [lista de itens]"*.
+2. Envia email para `renangada@gmail.com` via Gmail: *"Novo presente registrado por [Nome] – R$ XX,XX – [lista de itens]"*.
 3. Não bloqueia o redirect (envio "fire-and-forget" com pequeno timeout). O pagamento é responsabilidade do convidado; o registro é informativo.
 
 > Nota: não é checkout real. O convidado pode registrar e nunca pagar. O admin tem que confirmar manualmente o pagamento depois (campo `status` no admin).
@@ -365,7 +365,7 @@ Layout com sidebar + área principal. Abas:
 
 ---
 
-## 9. Emails (Brevo + React Email)
+## 9. Emails (Gmail + React Email)
 
 Templates em `src/emails/`:
 
@@ -374,17 +374,16 @@ Templates em `src/emails/`:
 
 Estilo dos emails: cream/champagne, mesma identidade do site, footer "Site dos noivos · Samara & Renan".
 
-Fluxo de envio: o helper `src/lib/brevo.ts` renderiza o componente React para HTML com `@react-email/components` (`render`) e faz `POST https://api.brevo.com/v3/smtp/email` direto via `fetch` — não usa SDK do Brevo (uma dep a menos). Se `BREVO_API_KEY` ou `BREVO_FROM_EMAIL` não estiverem configuradas, o helper retorna sem erro e a route apenas loga (com `redact`) — o RSVP/presente é persistido normalmente.
+Fluxo de envio: o helper `src/lib/email.ts` renderiza o componente React para HTML com `@react-email/components` (`render`) e envia pelo Gmail com Nodemailer. Se `GMAIL_USER` ou `GMAIL_APP_PASSWORD` não estiverem configuradas, o helper retorna sem exceção e a route registra o erro no log (com `redact`) — o RSVP/presente é persistido normalmente. No admin, a Visão Geral tem o botão "Testar envio de email".
 
 Variáveis de ambiente:
 ```
-BREVO_API_KEY=xkeysib-...
-BREVO_FROM_EMAIL=noreply@dominio-verificado.com   # precisa ser sender verificado no Brevo
-BREVO_FROM_NAME="Casamento Samara & Renan"        # opcional (default já é esse)
+GMAIL_USER=renangada@gmail.com
+GMAIL_APP_PASSWORD=                  # senha de app do Google, não a senha da conta
 NOTIFICATION_EMAIL=renangada@gmail.com,giordanisamara553@gmail.com   # separa por vírgula para múltiplos destinatários
 ```
 
-Setup no Brevo: criar conta em brevo.com → *Senders, Domains & Dedicated IPs* → verificar o email "from" (ou domínio inteiro via DNS) → *SMTP & API → API Keys* → gerar nova chave.
+Setup no Gmail: ativar a verificação em duas etapas e gerar uma senha de app em https://myaccount.google.com/apppasswords.
 
 ---
 
@@ -398,10 +397,9 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=        # Só usar no server
 
-# Brevo (email transacional)
-BREVO_API_KEY=
-BREVO_FROM_EMAIL=                  # Sender verificado no painel Brevo
-BREVO_FROM_NAME="Casamento Samara & Renan"
+# Avisos por email (Gmail)
+GMAIL_USER=
+GMAIL_APP_PASSWORD=
 NOTIFICATION_EMAIL=renangada@gmail.com
 
 # WhatsApp do Renan (para botão "Enviar Comprovante")
@@ -459,7 +457,7 @@ casamento/
 │   ├── emails/                # React Email templates
 │   ├── lib/
 │   │   ├── supabase/          # clients (browser, server, middleware)
-│   │   ├── brevo.ts
+│   │   ├── email.ts
 │   │   ├── cart-store.ts      # Zustand
 │   │   └── utils.ts
 │   ├── data/
@@ -509,7 +507,7 @@ A copy de "Nossa História" é livre — escrever um parágrafo curto inspirado 
 7. Implementar modal de RSVP com busca por nome + persistência
 8. Implementar página de presentes + carrinho Zustand + drawer
 9. Implementar fluxo `/presentes/resumo` e `/presentes/pagar`
-10. Implementar Route Handlers + emails Brevo
+10. Implementar Route Handlers + emails
 11. Implementar `/admin` (login) + middleware
 12. Implementar `/admin/dashboard` (4 abas)
 13. Polir animações Framer Motion (entradas e drawer)
@@ -524,7 +522,6 @@ A copy de "Nossa História" é livre — escrever um parágrafo curto inspirado 
 - **Traje** dos convidados (esporte fino? esporte? livre?).
 - **Texto de "Nossa História"** — Renan envia, ou autoriza Claude a redigir um draft.
 - **Lista exata de presentes do Moroni** a copiar (quais itens, valores). Plano: na fase de implementação, Claude lista os itens propostos para Renan validar.
-- **Sender verificado no Brevo** (definir o email "from" e verificar no painel — pode ser o próprio `renan_gs14@hotmail.com` ou um domínio próprio quando houver).
 - **Foto principal da Hero** (qual das 5 da pasta `fotos do casal`).
 - **Número de WhatsApp** do Renan (para botão "Enviar Comprovante").
 

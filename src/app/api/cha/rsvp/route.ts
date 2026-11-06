@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { submitChaRsvp } from "@/lib/cha-data";
 import { getChaItem } from "@/data/cha-itens";
-import { sendBrevoEmail, getNotificationEmails } from "@/lib/brevo";
+import { sendEmail, getNotificationEmails } from "@/lib/email";
 import { ChaEmail } from "@/emails/ChaEmail";
 import {
   rateLimit,
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
     whatsapp: data.whatsapp,
     comment: data.comment,
   };
-  const mail = await sendBrevoEmail({
+  const mail = await sendEmail({
     to: getNotificationEmails(),
     subject:
       result.attendingNames.length > 0
@@ -113,8 +113,7 @@ export async function POST(request: Request) {
     react: ChaEmail(payload),
   });
   if (!mail.ok) {
-    const logFn = mail.reason === "not_configured" ? console.info : console.error;
-    logFn(
+    console.error(
       `[CHA] Email não enviado (${mail.reason}): ${mail.error}`,
       redact(payload as unknown as Record<string, unknown>, ["whatsapp", "comment"]),
     );

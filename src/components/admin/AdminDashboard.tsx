@@ -136,6 +136,60 @@ function OverviewTab() {
           </div>
         ))}
       </div>
+      <TestEmailCard />
+    </div>
+  );
+}
+
+function TestEmailCard() {
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const run = async () => {
+    setBusy(true);
+    setResult(null);
+    try {
+      const r = await fetch("/api/admin/test-email", { method: "POST" });
+      const d = (await r.json()) as { ok?: boolean; to?: string[]; error?: string };
+      setResult(
+        d.ok
+          ? { ok: true, text: `Enviado para ${d.to?.join(", ")}. Confira a caixa de entrada e o spam.` }
+          : { ok: false, text: `Não enviou: ${d.error ?? "erro desconhecido"}` },
+      );
+    } catch {
+      setResult({ ok: false, text: "Não foi possível falar com o servidor." });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="card-soft p-5 mt-6">
+      <p className="label-uppercase mb-1">Avisos por email</p>
+      <p className="text-sm text-[var(--color-text-soft)] mb-3">
+        Envia um email de teste para os endereços de notificação.
+      </p>
+      <button
+        type="button"
+        onClick={run}
+        disabled={busy}
+        className="inline-flex items-center gap-2 rounded-full border border-[var(--color-champagne-deep)] px-4 py-2 text-[11px] tracking-[0.2em] uppercase text-[var(--color-champagne-darker)] hover:bg-[var(--color-champagne-darker)] hover:text-[var(--color-cream)] disabled:opacity-50"
+      >
+        {busy && <Loader2 size={13} className="animate-spin" />}
+        Testar envio de email
+      </button>
+      {result && (
+        <p
+          role="status"
+          className={`mt-3 text-sm rounded-lg py-2 px-3 border ${
+            result.ok
+              ? "text-green-900 bg-green-50 border-green-200"
+              : "text-red-800 bg-red-50 border-red-200"
+          }`}
+        >
+          {result.text}
+        </p>
+      )}
     </div>
   );
 }

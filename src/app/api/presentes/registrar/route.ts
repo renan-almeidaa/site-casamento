@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { getDemoStore, newId } from "@/lib/demo-store";
-import { sendBrevoEmail, getNotificationEmails } from "@/lib/brevo";
+import { sendEmail, getNotificationEmails } from "@/lib/email";
 import { GiftPurchaseEmail } from "@/emails/GiftPurchaseEmail";
 import {
   PRESENTES,
@@ -46,14 +46,13 @@ async function notify(payload: {
   items: { nome: string; valor: number; qtd: number }[];
   total: number;
 }) {
-  const result = await sendBrevoEmail({
+  const result = await sendEmail({
     to: getNotificationEmails(),
     subject: `🎁 ${payload.buyerName} registrou um presente`,
     react: GiftPurchaseEmail(payload),
   });
   if (!result.ok) {
-    const logFn = result.reason === "not_configured" ? console.info : console.error;
-    logFn(
+    console.error(
       `[Presente] Email não enviado (${result.reason}): ${result.error}`,
       redact(payload as unknown as Record<string, unknown>),
     );
@@ -177,8 +176,9 @@ export async function POST(request: Request) {
     });
   }
 
-  // fire-and-forget — não bloqueia a resposta
-  void notify({
+  // Com await: a função serverless pode encerrar antes de um envio solto.
+  // notify não lança erro; uma falha no email não afeta o registro.
+  await notify({
     buyerName: data.buyerName,
     buyerWhatsapp: data.buyerWhatsapp,
     items: data.items,

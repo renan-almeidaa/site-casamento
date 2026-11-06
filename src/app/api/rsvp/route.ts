@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { getDemoStore, newId } from "@/lib/demo-store";
-import { sendBrevoEmail, getNotificationEmails } from "@/lib/brevo";
+import { sendEmail, getNotificationEmails } from "@/lib/email";
 import { RsvpEmail } from "@/emails/RsvpEmail";
 import {
   rateLimit,
@@ -36,7 +36,7 @@ async function sendNotification(payload: {
   phone: string;
   comment?: string | null;
 }) {
-  const result = await sendBrevoEmail({
+  const result = await sendEmail({
     to: getNotificationEmails(),
     subject: payload.confirmed
       ? `✨ ${payload.familyName} confirmou presença`
@@ -44,8 +44,7 @@ async function sendNotification(payload: {
     react: RsvpEmail(payload),
   });
   if (!result.ok) {
-    const logFn = result.reason === "not_configured" ? console.info : console.error;
-    logFn(
+    console.error(
       `[RSVP] Email não enviado (${result.reason}): ${result.error}`,
       redact(payload as unknown as Record<string, unknown>),
     );
