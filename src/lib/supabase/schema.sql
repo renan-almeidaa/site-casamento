@@ -250,3 +250,112 @@ grant execute on function register_gift_with_quotas(text, text, jsonb, numeric, 
 -- CLEANUP
 drop function if exists register_gift_purchase(text, text, jsonb, numeric, text, text[], uuid);
 drop table if exists gift_lot_claims;
+
+-- =====================================================================
+-- Itens de dono único (coisas de casa) e registro do presente
+-- Rode este bloco inteiro no SQL Editor (é idempotente).
+-- =====================================================================
+
+-- item_id como PK garante um dono só. Apagar a compra libera o item.
+create table if not exists gift_item_claims (
+  item_id text primary key,
+  purchase_id uuid not null references gift_purchases(id) on delete cascade,
+  created_at timestamptz default now()
+);
+create index if not exists gift_item_claims_purchase_idx on gift_item_claims(purchase_id);
+
+alter table gift_item_claims enable row level security;
+
+drop policy if exists "admin all on gift_item_claims" on gift_item_claims;
+create policy "admin all on gift_item_claims" on gift_item_claims
+  for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+-- Grava o presente, as cotas e os itens de dono único numa transação só. Se
+-- faltar cota ou o item já tiver dono, nada é gravado e a função devolve o que
+-- está indisponível. p_cotas = [{presente_id, qtd, total}]. p_previous_id é o
+-- registro anterior da mesma sessão (convidado voltou e reenviou).
+create or replace function register_gift_checkout(
+  p_buyer_name text,
+  p_buyer_whatsapp text,
+  p_items jsonb,
+  p_total numeric,
+  p_payment_method text,
+  p_cotas jsonb,
+  p_item_ids text[],
+  p_previous_id uuid
+) returns json
+language plpgsql
+as $$
+declare
+  v_id uuid;
+  v_short jsonb := '[]'::jsonb;
+  v_taken jsonb := '[]'::jsonb;
+  v_usado int;
+  r record;
+begin
+  begin
+    -- Trava por presente/item, sempre na mesma ordem, para evitar deadlock.
+    perform pg_advisory_xact_lock(hashtext(x.chave))
+    from (
+      select distinct chave from (
+        select presente_id as chave from jsonb_to_recordset(p_cotas) as c(presente_id text)
+        union all
+        select unnest(p_item_ids)
+      ) t
+      order by chave
+    ) x;
+
+    if p_previous_id is not null then
+      delete from gift_purchases where id = p_previous_id and status = 'aguardando';
+    end if;
+
+    for r in select * from jsonb_to_recordset(p_cotas) as c(presente_id text, qtd int, total int) loop
+      select coalesce(sum(qtd), 0) into v_usado from gift_quota_claims where presente_id = r.presente_id;
+      if v_usado + r.qtd > r.total then
+        v_short := v_short || jsonb_build_object('presente_id', r.presente_id, 'restante', r.total - v_usado);
+      end if;
+    end loop;
+
+    select coalesce(jsonb_agg(item_id), '[]'::jsonb) into v_taken
+    from gift_item_claims where item_id = any(p_item_ids);
+
+    if jsonb_array_length(v_short) > 0 or jsonb_array_length(v_taken) > 0 then
+      raise exception 'indisponivel' using errcode = 'QU001';
+    end if;
+
+    insert into gift_purchases (buyer_name, buyer_whatsapp, items, total, payment_method, status)
+    values (p_buyer_name, p_buyer_whatsapp, p_items, p_total, p_payment_method, 'aguardando')
+    returning id into v_id;
+
+    insert into gift_quota_claims (presente_id, purchase_id, qtd)
+    select c.presente_id, v_id, c.qtd
+    from jsonb_to_recordset(p_cotas) as c(presente_id text, qtd int);
+
+    insert into gift_item_claims (item_id, purchase_id)
+    select unnest(p_item_ids), v_id;
+  exception when sqlstate 'QU001' then
+    return json_build_object('ok', false, 'short', v_short, 'taken', v_taken);
+  end;
+  return json_build_object('ok', true, 'id', v_id);
+end;
+$$;
+
+-- Só o servidor (service role) pode chamar a função.
+revoke execute on function register_gift_checkout(text, text, jsonb, numeric, text, jsonb, text[], uuid) from public, anon, authenticated;
+grant execute on function register_gift_checkout(text, text, jsonb, numeric, text, jsonb, text[], uuid) to service_role;
+
+-- Compras feitas antes desta regra: reserva os itens de dono único delas.
+insert into gift_item_claims (item_id, purchase_id, created_at)
+select it->>'id', p.id, p.created_at
+from gift_purchases p, jsonb_array_elements(p.items) it
+where it->>'id' in (
+  'comoda', 'rack-tv', 'forno-eletrico', 'filtro-agua', 'espelho-corpo',
+  'chuveiro-eletrico', 'mesa-cabeceira', 'kit-ferramentas', 'aspirador-po',
+  'furadeira', 'seguranca-lar', 'ventilador', 'escada-domestica', 'prateleiras',
+  'instalacao-cortinas', 'iluminacao', 'cantinho-verde'
+)
+on conflict (item_id) do nothing;
+
+-- Função anterior: só apagar depois que o site publicado usar a nova.
+-- CLEANUP
+drop function if exists register_gift_with_quotas(text, text, jsonb, numeric, text, jsonb, uuid);

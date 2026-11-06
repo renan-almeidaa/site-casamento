@@ -148,7 +148,7 @@ export function CotaGiftCard({
                     qtd,
                   )
                 }
-                className={`mt-3 w-full inline-flex items-center justify-center gap-1.5 rounded-full py-2.5 px-4 text-[11px] tracking-[0.25em] uppercase font-medium transition-colors disabled:opacity-50 ${
+                className={`mt-3 w-full inline-flex items-center justify-center gap-1.5 rounded-full py-2.5 px-4 text-[11px] tracking-[0.18em] uppercase font-medium transition-colors disabled:opacity-50 ${
                   salvo
                     ? "bg-[var(--color-pastel-yellow)] text-[var(--color-ink)]"
                     : "bg-[var(--color-champagne-darker)] text-white hover:bg-[var(--color-champagne-deep)]"
@@ -162,7 +162,7 @@ export function CotaGiftCard({
                   "Atualizar"
                 ) : (
                   <>
-                    <Plus size={14} /> Adicionar
+                    <Plus size={14} /> Presentear com este valor
                   </>
                 )}
               </button>

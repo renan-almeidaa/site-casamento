@@ -518,6 +518,20 @@ export function getPresenteDaCota(itemId: string) {
   return presente && temCotas(presente) ? presente : undefined;
 }
 
+// Coisas de casa até o valor das cotas têm um dono só: depois de escolhidas
+// ficam riscadas na lista, para ninguém dar (ou comprar) o mesmo item.
+const CATEGORIAS_DONO_UNICO: CategoriaId[] = [
+  "cozinha",
+  "quarto",
+  "sala",
+  "banheiro",
+  "lavanderia",
+  "casa",
+];
+
+export const temDonoUnico = (p: Presente) =>
+  p.valor > 0 && !temCotas(p) && CATEGORIAS_DONO_UNICO.includes(p.categoria);
+
 export const CATEGORIAS = [
   { id: "todos", label: "Todos" },
   { id: "cozinha", label: "Cozinha" },

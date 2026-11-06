@@ -11,7 +11,7 @@ import { useToast } from "@/components/ui/toaster";
 
 export default function ResumoPage() {
   const router = useRouter();
-  const { items, total, count, remove, setItem } = useCartStore();
+  const { items, total, remove, setItem } = useCartStore();
   const { toast } = useToast();
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -76,9 +76,9 @@ export default function ResumoPage() {
         takenItemIds?: string[];
         short?: { id: string; restante: number }[];
       };
-      // Outra pessoa escolheu as cotas nesse meio tempo: ajusta o carrinho.
-      if (r.status === 409 && data.short) {
-        const avisos = data.short.map(({ id, restante }) => {
+      // Outra pessoa escolheu nesse meio tempo: ajusta o carrinho e avisa.
+      if (r.status === 409 && (data.short || data.takenItemIds)) {
+        const avisos = (data.short ?? []).map(({ id, restante }) => {
           const item = items.find((it) => it.id === id);
           const nome = item?.nome.replace(/ \(cota.*$/, "") ?? "esse presente";
           if (restante === 0) {
@@ -88,26 +88,17 @@ export default function ResumoPage() {
           if (item) setItem(item, restante);
           return `${nome} só tem mais ${restante} ${restante === 1 ? "cota" : "cotas"}`;
         });
+        for (const id of data.takenItemIds ?? []) {
+          const item = items.find((it) => it.id === id);
+          if (item) avisos.push(`alguém acabou de escolher: ${item.nome}`);
+          remove(id);
+        }
         useCartStore.getState().close();
+        // Carrinho vazio volta para a lista, onde o aviso abaixo não aparece.
         if (useCartStore.getState().items.length === 0) {
-          toast("Esse presente acabou de ser completado");
+          toast("Esse presente acabou de ser escolhido");
         }
         setError(`Ops! ${avisos.join("; ")}. Ajustamos seu carrinho 😅`);
-        return;
-      }
-      if (r.status === 409 && data.takenItemIds) {
-        const nomes = items
-          .filter((it) => data.takenItemIds!.includes(it.id))
-          .map((it) => it.nome)
-          .join(", ");
-        data.takenItemIds.forEach((id) => remove(id));
-        // Carrinho vazio volta para a lista, onde o aviso abaixo não aparece.
-        if (items.every((it) => data.takenItemIds!.includes(it.id))) {
-          toast("Esse item não está mais disponível");
-        }
-        setError(
-          `Ops! ${nomes} mudou. Tiramos do seu carrinho, é só escolher de novo 😅`,
-        );
         return;
       }
       if (!r.ok) throw new Error(data.error ?? "Erro ao registrar presente");
@@ -135,23 +126,23 @@ export default function ResumoPage() {
     <main className="min-h-screen bg-[var(--color-champagne-darker)] text-[var(--color-cream)] flex flex-col">
       <Link
         href="/presentes"
-        className="fixed top-4 left-4 z-50 inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-[rgba(247,243,238,0.1)] backdrop-blur text-[11px] tracking-[0.2em] uppercase text-[var(--color-cream)] hover:bg-[rgba(247,243,238,0.2)]"
+        className="self-start m-4 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[rgba(247,243,238,0.14)] text-[13px] tracking-[0.1em] uppercase text-[var(--color-cream)] hover:bg-[rgba(247,243,238,0.24)]"
       >
-        <ArrowLeft size={13} /> Lista
+        <ArrowLeft size={15} /> Lista
       </Link>
 
       <motion.section
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex-1 flex items-center justify-center px-5 py-20"
+        className="flex-1 flex items-center justify-center px-5 pt-2 pb-16"
       >
         <div className="w-full max-w-md text-center">
-          <p className="label-uppercase text-[var(--color-champagne)] mb-2">
-            Resumo do presente
-          </p>
-          <p className="font-[var(--font-display)] text-xl md:text-2xl mb-1">
-            {count()} {count() === 1 ? "item selecionado" : "itens selecionados"}
+          <h1 className="font-[var(--font-display)] text-3xl mb-1">
+            Seu presente em dinheiro
+          </h1>
+          <p className="text-base mb-1">
+            {items.length} {items.length === 1 ? "presente escolhido" : "presentes escolhidos"}
           </p>
           <p
             className="font-[var(--font-display)] text-5xl md:text-6xl my-4 tabular-nums"
@@ -160,7 +151,7 @@ export default function ResumoPage() {
             {formatBRL(total())}
           </p>
 
-          <ul className="text-left text-sm space-y-1 mb-8 max-h-32 overflow-y-auto opacity-80">
+          <ul className="text-left text-[15px] space-y-1 mb-4 max-h-40 overflow-y-auto">
             {items.map((it) => (
               <li
                 key={it.id}
@@ -174,13 +165,18 @@ export default function ResumoPage() {
             ))}
           </ul>
 
-          <p className="label-uppercase text-[var(--color-champagne)] mb-3">
-            Antes de pagar, seus dados
+          <p className="text-base leading-relaxed mb-8">
+            Não precisa comprar nem levar o item: você envia esse valor para nós
+            💛
+          </p>
+
+          <p className="label-uppercase !text-[#e6c98e] !text-[13px] !tracking-[0.14em] mb-3">
+            Antes de enviar, seus dados
           </p>
 
           <div className="space-y-5 text-left">
             <div>
-              <label className="block label-uppercase text-[var(--color-champagne)] mb-1.5 text-center">
+              <label className="block label-uppercase !text-[#e6c98e] !text-[13px] !tracking-[0.14em] mb-1.5 text-center">
                 Nome completo
               </label>
               <input
@@ -188,11 +184,11 @@ export default function ResumoPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Seu nome"
-                className="w-full bg-transparent border-0 border-b border-[rgba(196,168,130,0.5)] py-2 text-center font-[var(--font-display)] text-xl text-[var(--color-cream)] placeholder:text-[rgba(247,243,238,0.4)] focus:outline-none focus:border-[var(--color-champagne)]"
+                className="w-full bg-transparent border-0 border-b border-[#e6c98e] py-2 text-center font-[var(--font-display)] text-xl text-[var(--color-cream)] placeholder:text-[rgba(247,243,238,0.65)] focus:outline-none focus:border-[var(--color-champagne)]"
               />
             </div>
             <div>
-              <label className="block label-uppercase text-[var(--color-champagne)] mb-1.5 text-center">
+              <label className="block label-uppercase !text-[#e6c98e] !text-[13px] !tracking-[0.14em] mb-1.5 text-center">
                 WhatsApp
               </label>
               <input
@@ -201,13 +197,13 @@ export default function ResumoPage() {
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(maskWhatsapp(e.target.value))}
                 placeholder="(11) 9 0000-0000"
-                className="w-full bg-transparent border-0 border-b border-[rgba(196,168,130,0.5)] py-2 text-center font-[var(--font-display)] text-xl text-[var(--color-cream)] placeholder:text-[rgba(247,243,238,0.4)] focus:outline-none focus:border-[var(--color-champagne)]"
+                className="w-full bg-transparent border-0 border-b border-[#e6c98e] py-2 text-center font-[var(--font-display)] text-xl text-[var(--color-cream)] placeholder:text-[rgba(247,243,238,0.65)] focus:outline-none focus:border-[var(--color-champagne)]"
               />
             </div>
           </div>
 
           {error && (
-            <p className="mt-4 text-sm text-red-200 bg-red-950/40 border border-red-900/40 rounded-lg py-2 px-3">
+            <p className="mt-4 text-[15px] text-red-100 bg-red-950/40 border border-red-900/40 rounded-lg py-2 px-3">
               {error}
             </p>
           )}
@@ -216,13 +212,13 @@ export default function ResumoPage() {
             type="button"
             disabled={submitting}
             onClick={submit}
-            className="mt-8 w-full inline-flex items-center justify-center gap-2 rounded-full bg-[var(--color-champagne)] text-[var(--color-champagne-darker)] hover:bg-[#d8be90] py-3.5 px-6 text-[12px] tracking-[0.3em] uppercase font-medium transition-colors disabled:opacity-60"
+            className="mt-8 w-full inline-flex items-center justify-center gap-2 rounded-full bg-[var(--color-champagne)] text-[var(--color-champagne-darker)] hover:bg-[#d8be90] py-4 px-5 text-[14px] tracking-[0.06em] uppercase font-medium transition-colors disabled:opacity-60"
           >
             {submitting ? (
               <Loader2 size={14} className="animate-spin" />
             ) : (
               <>
-                Continuar para pagamento <ArrowRight size={14} />
+                Continuar para enviar o valor <ArrowRight size={16} />
               </>
             )}
           </button>
@@ -230,7 +226,7 @@ export default function ResumoPage() {
           <p className="mt-8">
             <Link
               href="/presentes"
-              className="text-sm text-[var(--color-champagne)] hover:text-[var(--color-cream)]"
+              className="text-base underline underline-offset-4 text-[var(--color-cream)] hover:text-[#e6c98e]"
             >
               ← Voltar para a lista
             </Link>

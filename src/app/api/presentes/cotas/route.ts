@@ -1,18 +1,21 @@
 import { NextResponse } from "next/server";
-import { listUsedQuotas } from "@/lib/gift-quotas";
+import { listTakenItemIds, listUsedQuotas } from "@/lib/gift-quotas";
 import { rateLimit, getClientIp, tooManyRequests } from "@/lib/security";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Devolve só quantas cotas de cada presente já foram escolhidas — nunca quem.
+// Devolve só o que já foi escolhido (cotas por presente e itens) — nunca quem.
 export async function GET(request: Request) {
   const ip = getClientIp(request);
   if (!rateLimit(`presente-cotas:${ip}`, 120, 60_000)) return tooManyRequests();
   try {
-    const used = await listUsedQuotas();
+    const [used, takenItems] = await Promise.all([
+      listUsedQuotas(),
+      listTakenItemIds(),
+    ]);
     return NextResponse.json(
-      { used },
+      { used, takenItems },
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (err) {

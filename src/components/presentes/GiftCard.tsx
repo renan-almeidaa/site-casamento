@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Check, Plus, Sparkles } from "lucide-react";
-import type { Presente } from "@/data/presentes";
+import { temDonoUnico, type Presente } from "@/data/presentes";
 import { useCartStore } from "@/lib/cart-store";
 import { formatBRL } from "@/lib/utils";
 import { PresenteIcon } from "./PresenteIcon";
@@ -18,8 +18,15 @@ const pastelMap = {
   yellow: "var(--color-pastel-yellow)",
 } as const;
 
-export function GiftCard({ presente }: { presente: Presente }) {
+export function GiftCard({
+  presente,
+  taken = false,
+}: {
+  presente: Presente;
+  taken?: boolean;
+}) {
   const addItem = useCartStore((s) => s.addItem);
+  const openCart = useCartStore((s) => s.open);
   const inCart = useCartStore((s) =>
     s.items.find((i) => i.id === presente.id),
   );
@@ -31,6 +38,20 @@ export function GiftCard({ presente }: { presente: Presente }) {
 
   const handleCardClick = () => {
     if (customOpen) return;
+    if (temDonoUnico(presente)) {
+      // Um dono só: tocar de novo apenas mostra a sacola, sem somar quantidade.
+      if (isInCart) {
+        openCart();
+        return;
+      }
+      addItem({
+        id: presente.id,
+        nome: presente.nome,
+        valor: presente.valor,
+        isUnico: true,
+      });
+      return;
+    }
     if (isCustom) {
       setCustomOpen(true);
       return;
@@ -51,6 +72,38 @@ export function GiftCard({ presente }: { presente: Presente }) {
     setCustomOpen(false);
     setCustomValue("100");
   };
+
+  if (taken) {
+    return (
+      <div
+        className="card-soft overflow-hidden flex flex-col h-full relative"
+        aria-label={`${presente.nome}: já escolhido por outra pessoa`}
+      >
+        <div className="relative aspect-[4/3] overflow-hidden">
+          {presente.imagem && (
+            <Image
+              src={presente.imagem}
+              alt=""
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover grayscale opacity-50"
+            />
+          )}
+          <span className="absolute top-3 left-3 rounded-full bg-[var(--color-champagne-darker)] text-[var(--color-cream)] px-3 py-1.5 text-[13px]">
+            Já escolhido 💛
+          </span>
+        </div>
+        <div className="p-4 sm:p-5 flex-1 flex flex-col">
+          <h3 className="font-[var(--font-display)] font-light text-xl text-[var(--color-text-soft)] leading-tight line-through decoration-[var(--color-champagne-deep)] decoration-2">
+            {presente.nome}
+          </h3>
+          <p className="mt-3 font-[var(--font-display)] text-xl text-[var(--color-text-soft)] line-through decoration-[var(--color-champagne-deep)] decoration-2">
+            {formatBRL(presente.valor)}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -123,7 +176,7 @@ export function GiftCard({ presente }: { presente: Presente }) {
           </span>
         </div>
         <div
-          className={`mt-4 w-full inline-flex items-center justify-center gap-1.5 rounded-full py-2.5 px-4 text-[11px] tracking-[0.25em] uppercase font-medium transition-colors ${
+          className={`mt-4 w-full inline-flex items-center justify-center gap-1.5 rounded-full py-2.5 px-4 text-[11px] tracking-[0.18em] uppercase font-medium transition-colors text-center ${
             isInCart
               ? "bg-[var(--color-pastel-yellow)] text-[var(--color-ink)]"
               : "bg-[var(--color-champagne-darker)] text-white group-hover:bg-[var(--color-champagne-deep)]"
@@ -136,7 +189,7 @@ export function GiftCard({ presente }: { presente: Presente }) {
             </>
           ) : (
             <>
-              <Plus size={14} /> Adicionar
+              <Plus size={14} /> Presentear com este valor
             </>
           )}
         </div>

@@ -10,6 +10,7 @@ import {
   cotaItemId,
   getPresenteDaCota,
   temCotas,
+  temDonoUnico,
   totalCotas,
 } from "@/data/presentes";
 import { registerGiftWithQuotas } from "@/lib/gift-quotas";
@@ -112,9 +113,19 @@ export async function POST(request: Request) {
     });
   }
 
+  const itemIds: string[] = [];
+  for (const it of data.items) {
+    const presente = PRESENTES.find((p) => p.id === it.id);
+    if (!presente || !temDonoUnico(presente)) continue;
+    if (it.qtd !== 1 || it.valor !== presente.valor) {
+      return NextResponse.json({ error: "Item inválido" }, { status: 400 });
+    }
+    itemIds.push(it.id);
+  }
+
   const supa = createSupabaseServiceClient();
   let purchaseId: string;
-  if (cotas.length > 0 || data.previousPurchaseId) {
+  if (cotas.length > 0 || itemIds.length > 0 || data.previousPurchaseId) {
     let result;
     try {
       result = await registerGiftWithQuotas({
@@ -124,6 +135,7 @@ export async function POST(request: Request) {
         total: data.total,
         paymentMethod: data.paymentMethod,
         cotas,
+        itemIds,
         previousId: data.previousPurchaseId ?? null,
       });
     } catch (err) {
@@ -133,11 +145,12 @@ export async function POST(request: Request) {
     if (!result.ok) {
       return NextResponse.json(
         {
-          error: "cotas",
+          error: "indisponivel",
           short: result.short.map((s) => ({
             id: cotaItemId(s.presente_id),
             restante: Math.max(0, s.restante),
           })),
+          takenItemIds: result.taken,
         },
         { status: 409 },
       );

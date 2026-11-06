@@ -15,11 +15,15 @@ import { Footer } from "@/components/layout/Footer";
 export default function PresentesPage() {
   const [cat, setCat] = useState<string>("todos");
   const [usedQuotas, setUsedQuotas] = useState<Record<string, number>>({});
+  const [takenItems, setTakenItems] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetch("/api/presentes/cotas", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : { used: {} }))
-      .then((d: { used: Record<string, number> }) => setUsedQuotas(d.used))
+      .then((r) => (r.ok ? r.json() : { used: {}, takenItems: [] }))
+      .then((d: { used: Record<string, number>; takenItems: string[] }) => {
+        setUsedQuotas(d.used);
+        setTakenItems(new Set(d.takenItems));
+      })
       .catch(() => {
         // silencioso — o servidor recusa cota indisponível na hora de registrar
       });
@@ -60,12 +64,11 @@ export default function PresentesPage() {
             />
             <p className="text-sm sm:text-[15px] leading-relaxed text-[var(--color-text)]">
               <span className="font-medium text-[var(--color-ink)]">
-                Pra deixar tudo claro:
+                Você não compra nem entrega nada.
               </span>{" "}
-              você não precisa comprar e mandar o item pra gente. Ao escolher
-              um presente, você está contribuindo com o valor dele pra a gente
-              montar nosso primeiro lar do nosso jeitinho. Cada presente que
-              você escolher vira parte da nossa nova vida.{" "}
+              Escolha um presente e envie o valor em dinheiro, por Pix ou
+              cartão. Nós mesmos compramos. Os itens riscados já foram
+              escolhidos.{" "}
               <span className="italic-romance text-[var(--color-champagne-deep)]">
                 Obrigado de coração!
               </span>
@@ -124,7 +127,7 @@ export default function PresentesPage() {
                   {temCotas(p) ? (
                     <CotaGiftCard presente={p} used={usedQuotas[p.id] ?? 0} />
                   ) : (
-                    <GiftCard presente={p} />
+                    <GiftCard presente={p} taken={takenItems.has(p.id)} />
                   )}
                 </motion.div>
               ))}

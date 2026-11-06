@@ -98,7 +98,7 @@ export function CartDrawer() {
                         <span className="text-sm text-[var(--color-text-soft)] whitespace-nowrap">
                           {it.qtd} {it.qtd === 1 ? "cota" : "cotas"}
                         </span>
-                      ) : (
+                      ) : it.isUnico ? null : (
                       <div className="flex items-center gap-1">
                         <button
                           type="button"
@@ -136,6 +136,9 @@ export function CartDrawer() {
             </div>
 
             <footer className="border-t border-[var(--color-border-soft)] p-5 bg-[var(--color-cream-soft)]">
+              <p className="text-sm text-[var(--color-text)] mb-3">
+                Você envia o valor em dinheiro para os noivos.
+              </p>
               <div className="flex items-baseline justify-between mb-4">
                 <span className="label-uppercase">Total</span>
                 <span

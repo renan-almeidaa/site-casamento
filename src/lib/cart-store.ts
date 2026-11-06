@@ -2,7 +2,13 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { cotaNome, getPresenteDaCota, VALOR_COTA } from "@/data/presentes";
+import {
+  PRESENTES,
+  VALOR_COTA,
+  cotaNome,
+  getPresenteDaCota,
+  temDonoUnico,
+} from "@/data/presentes";
 
 export type CartItem = {
   id: string;
@@ -11,6 +17,7 @@ export type CartItem = {
   qtd: number;
   isCustomValue?: boolean;
   isCota?: boolean;
+  isUnico?: boolean;
 };
 
 type CartState = {
@@ -99,6 +106,10 @@ export const useCartStore = create<CartState>()(
           ...saved,
           items: (saved.items ?? []).flatMap((it) => {
             if (it.id.includes("--lote-")) return [];
+            const item = PRESENTES.find((p) => p.id === it.id);
+            if (item && temDonoUnico(item)) {
+              return [{ ...it, valor: item.valor, qtd: 1, isUnico: true }];
+            }
             const presente = getPresenteDaCota(it.id);
             return presente
               ? [{ ...it, nome: cotaNome(presente), valor: VALOR_COTA }]

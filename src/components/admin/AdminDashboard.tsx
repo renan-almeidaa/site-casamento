@@ -25,7 +25,8 @@ import { RsvpTable } from "@/components/admin/RsvpTable";
 import { GiftPurchasesTable } from "@/components/admin/GiftPurchasesTable";
 import { ChaManager } from "@/components/admin/ChaManager";
 import { CotasManager } from "@/components/admin/CotasManager";
-import type { AdminQuotaClaim } from "@/lib/gift-quotas";
+import { ItensManager } from "@/components/admin/ItensManager";
+import type { AdminItemClaim, AdminQuotaClaim } from "@/lib/gift-quotas";
 import type { AdminChaResponse } from "@/lib/cha-data";
 import { formatBRL } from "@/lib/utils";
 import type { AdminFamily, AdminRsvp, AdminGiftPurchase } from "@/lib/admin-data";
@@ -346,18 +347,22 @@ function RsvpTab() {
 function PresentesTab() {
   const [purchases, setPurchases] = useState<AdminGiftPurchase[] | null>(null);
   const [claims, setClaims] = useState<AdminQuotaClaim[]>([]);
+  const [itemClaims, setItemClaims] = useState<AdminItemClaim[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [res, cotas] = await Promise.all([
+    const [res, cotas, itens] = await Promise.all([
       fetch("/api/admin/gift-purchases"),
       fetch("/api/admin/cotas"),
+      fetch("/api/admin/itens"),
     ]);
     const d = await res.json() as { purchases: AdminGiftPurchase[] };
     const c = await cotas.json() as { claims?: AdminQuotaClaim[] };
     setPurchases(d.purchases);
+    const i = await itens.json() as { claims?: AdminItemClaim[] };
     setClaims(c.claims ?? []);
+    setItemClaims(i.claims ?? []);
     setLoading(false);
   }, []);
 
@@ -374,6 +379,7 @@ function PresentesTab() {
           Lista dos presentes registrados pelos convidados. Marque como confirmado quando o comprovante chegar.
         </p>
       </header>
+      <ItensManager claims={itemClaims} onRefresh={load} />
       <CotasManager claims={claims} onRefresh={load} />
       <GiftPurchasesTable purchases={purchases ?? []} onRefresh={load} />
     </div>
