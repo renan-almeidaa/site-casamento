@@ -137,6 +137,7 @@ function OverviewTab() {
         ))}
       </div>
       <TestEmailCard />
+      <ResendCard />
     </div>
   );
 }
@@ -189,6 +190,95 @@ function TestEmailCard() {
         >
           {result.text}
         </p>
+      )}
+    </div>
+  );
+}
+
+type ResendRow = { key: string; label: string; status: "pendente" | "enviando" | "enviado" | "erro"; error?: string };
+
+function ResendCard() {
+  const [rows, setRows] = useState<ResendRow[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const setRow = (key: string, patch: Partial<ResendRow>) =>
+    setRows((prev) => prev.map((r) => (r.key === key ? { ...r, ...patch } : r)));
+
+  const run = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await fetch("/api/admin/resend-notifications");
+      const d = (await r.json()) as { to?: string[]; items?: { key: string; label: string }[] };
+      const items = d.items ?? [];
+      if (!r.ok || items.length === 0) {
+        setError(r.ok ? "Nenhuma resposta registrada." : "Não foi possível carregar as respostas.");
+        return;
+      }
+      if (!window.confirm(`Enviar ${items.length} aviso(s) para ${d.to?.join(", ")}?`)) return;
+
+      // Numa nova tentativa, só o que falhou é enviado de novo.
+      const enviados = new Set(rows.filter((x) => x.status === "enviado").map((x) => x.key));
+      setRows(items.map((it) => ({ ...it, status: enviados.has(it.key) ? "enviado" : "pendente" })));
+      for (const it of items) {
+        if (enviados.has(it.key)) continue;
+        setRow(it.key, { status: "enviando" });
+        try {
+          const res = await fetch("/api/admin/resend-notifications", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ key: it.key }),
+          });
+          const out = (await res.json()) as { ok?: boolean; error?: string };
+          setRow(it.key, out.ok ? { status: "enviado" } : { status: "erro", error: out.error ?? "Erro" });
+        } catch {
+          setRow(it.key, { status: "erro", error: "Sem resposta do servidor" });
+        }
+      }
+    } catch {
+      setError("Não foi possível falar com o servidor.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const tudoEnviado = rows.length > 0 && rows.every((r) => r.status === "enviado");
+
+  return (
+    <div className="card-soft p-5 mt-4">
+      <p className="label-uppercase mb-1">Reenviar avisos</p>
+      <p className="text-sm text-[var(--color-text-soft)] mb-3">
+        Manda de novo o email de todas as respostas e presentes já registrados. Use só uma vez.
+      </p>
+      <button
+        type="button"
+        onClick={run}
+        disabled={busy || tudoEnviado}
+        className="inline-flex items-center gap-2 rounded-full border border-[var(--color-champagne-deep)] px-4 py-2 text-[11px] tracking-[0.2em] uppercase text-[var(--color-champagne-darker)] hover:bg-[var(--color-champagne-darker)] hover:text-[var(--color-cream)] disabled:opacity-50"
+      >
+        {busy && <Loader2 size={13} className="animate-spin" />}
+        {busy ? "Enviando..." : tudoEnviado ? "Tudo enviado" : rows.some((r) => r.status === "erro") ? "Tentar os que falharam" : "Reenviar avisos"}
+      </button>
+      {error && (
+        <p role="alert" className="mt-3 text-sm text-red-800 bg-red-50 border border-red-200 rounded-lg py-2 px-3">
+          {error}
+        </p>
+      )}
+      {rows.length > 0 && (
+        <ul className="mt-3 divide-y divide-[var(--color-border-soft)]">
+          {rows.map((r) => (
+            <li key={r.key} className="py-2 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[var(--color-ink)]">{r.label}</span>
+                <span className={`text-xs whitespace-nowrap ${r.status === "erro" ? "text-red-700" : "text-[var(--color-text-soft)]"}`}>
+                  {r.status === "enviado" ? "✓ Enviado" : r.status === "erro" ? "Falhou" : r.status === "enviando" ? "Enviando..." : "Na fila"}
+                </span>
+              </div>
+              {r.error && <p className="text-xs text-red-700 mt-1">{r.error}</p>}
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );
